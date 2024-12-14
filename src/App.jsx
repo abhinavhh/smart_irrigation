@@ -4,7 +4,11 @@ import './App.css'
 function App() {
   return(
     <>
-      <div></div>
+      <div>
+        <form action="#">
+          Name : <input type="text" />
+        </form>
+      </div>
     </>
   )
 }
