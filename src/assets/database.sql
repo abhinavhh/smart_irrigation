@@ -24,12 +24,17 @@ CREATE TABLE users(
 
 CREATE TABLE irrigation_settings(
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
+    user_id INT REFERENCES users(id)
     start_time TIME,
     endt_ime TIME,
     min_moisture_level NUMERIC
 );
 
-INSERT INTO sensor_data (sensor_type,value) VALUES ('Temperature', 26.5);
+DELETE FROM users WHERE username = 'iot_user';
+INSERT INTO users(username , password) VALUES ('postgres','Abhinav@123');
+INSERT INTO sensor_data (sensor_type,value) VALUES ('Temperature', 28.5);
 
 SELECT * FROM sensor_data;
+
+
+SELECT * FROM users;
