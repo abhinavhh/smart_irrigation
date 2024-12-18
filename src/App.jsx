@@ -1,14 +1,11 @@
 
 import './App.css'
+import Dashboard from './Components/Dashboard'
 
 function App() {
   return(
     <>
-      <div>
-        <form action="#">
-          Name : <input type="text" />
-        </form>
-      </div>
+      <Dashboard/>
     </>
   )
 }
