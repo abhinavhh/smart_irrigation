@@ -1,37 +1,30 @@
-import { useEffect, useState } from "react"
-import api from "../Services/Api";
+import React, { useEffect, useState } from "react";
+import axiosInstance from "../Services/Api";
 
+function Dashboard() {
+  const [crops, setCrops] = useState([]);
 
-const Dashboard = () => {
-    const[sensorData,setSensorData] = useState([]);
-    useEffect(() => {
-        api.get("/sensor/all")
-            .then((response) => setSensorData(response.data))
-            .catch((error) => console.log("Error fetching data: ",error));
-    },[]);
+  useEffect(() => {
+    axiosInstance
+      .get("/crops/all")
+      .then((response) => {
+        setCrops(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching crops:", error);
+      });
+  }, []);
+
   return (
     <div>
-      <h2>Sensor Data</h2>
-      <table>
-        <thead>
-            <tr>
-                <th>Type</th>
-                <th>Value</th>
-                <th>TimeStamp</th>
-            </tr>
-        </thead>
-        <tbody>
-            {sensorData.map((data,index) => (
-                <tr key={index}>
-                    <td>{data.sensorType}</td>
-                    <td>{data.sensorValue}</td>
-                    <td>{data.timeStamp? new Date(data.timeStamp).toLocaleDateString():"Invaid Date"}</td>
-                </tr>
-            ))}
-        </tbody>
-      </table>
+      <h2>Your Crops</h2>
+      <ul>
+        {crops.map((crop) => (
+          <li key={crop.id}>{crop.name}</li>
+        ))}
+      </ul>
     </div>
-  )
+  );
 }
 
-export default Dashboard
+export default Dashboard;
