@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axiosInstance from "../Services/Api";
+import axiosInstance from "../api/axios";
 
 function AddCrop() {
   const [cropName, setCropName] = useState("");

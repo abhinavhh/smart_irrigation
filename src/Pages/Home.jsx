@@ -1,80 +1,41 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import axiosInstance from "../Services/Api";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function Home({ onLogout }) {
-  const [crops, setCrops] = useState(JSON.parse(localStorage.getItem("crops")) || []);
-  const [sensorData, setSensorData] = useState(JSON.parse(localStorage.getItem("sensorData")) || {});
-  const navigate = useNavigate();
+const Home = () => {
+    const [sensorData, setSensorData] = useState([]);
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    axiosInstance
-      .get("/crops")
-      .then((response) => {
-        setCrops(response.data);
-        localStorage.setItem("crops", JSON.stringify(response.data));
-      })
-      .catch((error) => console.error("Error fetching crops:", error));
+    useEffect(() => {
+        const socket = new WebSocket('ws://localhost:8080/ws/sensor-data');
 
-    axiosInstance
-      .get("/sensor/latest")
-      .then((response) => {
-        setSensorData(response.data);
-        localStorage.setItem("sensorData", JSON.stringify(response.data));
-      })
-      .catch((error) => console.error("Error fetching sensor data:", error));
-  }, []);
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            setSensorData(data);
+        };
 
-  const handleCropClick = (cropId) => {
-    navigate(`/crop/${cropId}`);
-  };
+        // return () => socket.close();
+    }, []);
 
-  return (
-    <div>
-      <h1>Home Page</h1>
-      <h2>Your Crops</h2>
-      {crops.length === 0 ? (
+    return (
         <div>
-          <p>No crops added yet</p>
-          <button onClick={() => navigate("/add-crop")}>Add Crop</button>
+            <button onClick={() => navigate('/profile')} style={{ float: 'right' }}>Profile</button>
+            <h1>Smart Irrigation Dashboard</h1>
+            
+            {/* Sensor Data Cards */}
+            <div style={{ display: 'flex', gap: '20px' }}>
+                {sensorData.map((data, index) => (
+                    <div key={index} style={{ border: '1px solid black', padding: '10px' }}>
+                        <h3>{data.sensorType}</h3>
+                        <p>{data.value}</p>
+                    </div>
+                ))}
+            </div>
+
+            <button onClick={() => navigate('/control-panel')} style={{ position: 'fixed', bottom: '10px', right: '10px' }}>
+                Control Panel
+            </button>
         </div>
-      ) : (
-        <ul>
-          {crops.map((crop) => (
-            <li
-              key={crop.id}
-              style={{
-                color: "blue",
-                textDecoration: "underline",
-                cursor: "pointer",
-              }}
-              onClick={() => handleCropClick(crop.id)}
-            >
-              {crop.name}
-            </li>
-          ))}
-        </ul>
-      )}
-            <h2>Current Sensor Readings</h2>
-      <div style={{ display: "flex", gap: "10px" }}>
-        {["temperature", "humidity", "soilMoisture"].map((type) => (
-          <div
-            key={type}
-            style={{
-              border: "1px solid #ccc",
-              padding: "10px",
-              cursor: "pointer",
-            }}
-            onClick={() => navigate(`/graph/${type}`)}
-          >
-            <p>{type.charAt(0).toUpperCase() + type.slice(1)}</p>
-            <p>{sensorData[type] || "N/A"}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-    
-  );
-}
+    );
+};
 
 export default Home;

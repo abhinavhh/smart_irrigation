@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axiosInstance from "../Services/Api";
+import axiosInstance from "../api/axios";
 
 function Dashboard() {
   const [crops, setCrops] = useState([]);

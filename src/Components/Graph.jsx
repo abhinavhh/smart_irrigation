@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axiosInstance from "../Services/Api";
+import axiosInstance from "../api/axios";
 import { Line } from "react-chartjs-2";
 import "chart.js/auto";
 

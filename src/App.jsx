@@ -4,12 +4,13 @@ import Profile from "./Components/Profile";
 import Login from "./Pages/Login";
 import AddCrop from "./Components/AddCrop";
 import CropDetails from "./Components/CropDetails";
-import Dashboard from "./Components/Dashboard";
+// import Dashboard from "./Components/Dashboard";
 import Graph from "./Components/Graph";
 import ControlPanel from "./Components/ControlPanel";
 import Register from "./Pages/Register";
 import { useState,useEffect } from "react";
-import ResetPasswordRequest from "./Components/ResetPasswordRequest";
+import ResetPasswordRequest from "./Components/ResetPassword";
+import ForgotPassword from "./Components/ForgotPassword";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -32,22 +33,13 @@ function App() {
     <Router>
       <Routes>
         <Route path="/register" element={<Register />} />
-        <Route path="/" element={<Login onLogin={handleLogin} />} />
-        <Route path="/home" element={<Home />} />
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route path="/" element={<Login />} />
         <Route path="/reset-password" element={<ResetPasswordRequest/>}/>
-        {/* <Route
-          path="/home"
-          element={
-            isAuthenticated ? (
-              <Home onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/register" />
-            )
-          }
-        /> */}
+        <Route path="/home" element={<Home onLogout={handleLogout} />}/>
         <Route path="/addCrop"element={<AddCrop />}/>
         <Route path="/cropdetails" element={<CropDetails/>}/>
-        <Route path="/dashboard" element={<Dashboard/>}/>
+        <Route path="/forgot-password" element={<ForgotPassword/>}/>
         <Route path="/notifications" element={<Notification/>}/>
         <Route path="/graph" element={<Graph/>}/>
         <Route path="/controlpanel" element={<ControlPanel/>}/>

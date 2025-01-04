@@ -1,26 +1,31 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../Services/Api";
+import axiosInstance from "../api/axios";
 
 function Login({ onLogin }) {
-  const [formData, setFormData] = useState({ username: "", password: "" });
-  const [error, setError] = useState("");
+  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+
+  useEffect(() => {
+    const loggedInUser = localStorage.getItem("username");
+    if (loggedInUser) {
+        navigate("/home");
+    }
+  }, [navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    axiosInstance
-      .post("/auth/login", formData)
-      .then((response) => {
-        const token = response.data.token;
-        onLogin(token); // Save token and update state
-        navigate("/"); // Redirect to home page
-      })
-      .catch((error) => {
-        console.error("Login error:", error);
+    try {
+        const response = await axiosInstance.post('/auth/login', formData);
+        localStorage.setItem("username", formData.username);
+        alert(response.data);
+        navigate('/home');  // Redirect to the home page on success
+    } catch (error) {
         setError("Invalid username or password");
-      });
+    }
   };
 
   const handleChange = (e) => {
