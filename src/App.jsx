@@ -30,8 +30,8 @@ function App() {
     setIsAuthenticated(false);
   };
   return (
-    <Login/>
-    <Router>
+    <>
+    
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
@@ -42,11 +42,12 @@ function App() {
         <Route path="/cropdetails" element={<CropDetails/>}/>
         <Route path="/forgot-password" element={<ForgotPassword/>}/>
         <Route path="/notifications" element={<Notification/>}/>
-        <Route path="/graph" element={<Graph/>}/>
+        <Route path="/graph/:sensorType" element={<Graph/>}/>
         <Route path="/controlpanel" element={<ControlPanel/>}/>
         <Route path="/profile" element={<Profile/>}/>
       </Routes>
-    </Router>
+    
+    </>
   );
 }
 

@@ -5,7 +5,7 @@ const Home = () => {
     const [sensorData, setSensorData] = useState({
         Temperature: "N/A",
         Humidity: "N/A",
-        "Soil Moisture": "N/A"
+        SoilMoisture: "N/A"
     });
     const navigate = useNavigate();
 
@@ -50,7 +50,7 @@ const Home = () => {
             {/* Sensor Data Cards */}
             <div style={{ display: 'flex', gap: '20px' }}>
                 {Object.entries(sensorData).map(([key, value]) => (
-                    <div key={key} style={{ border: '2px solid black', padding: '10px' }}>
+                    <div key={key} onClick={() => navigate(`/graph/${key}`)} style={{ border: '2px solid black', padding: '10px' }}>
                         <h3>{key}</h3>
                         <p>{value}</p>
                     </div>

@@ -1,50 +1,37 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axiosInstance from "../api/axios";
-import { Line } from "react-chartjs-2";
-import "chart.js/auto";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axiosInstance from '../api/axios';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
-function Graph() {
-  const { sensorType } = useParams();
-  const [timeRange, setTimeRange] = useState("day");
-  const [graphData, setGraphData] = useState([]);
+const Graph = () => {
+    const { sensorType } = useParams();
+    const [data, setData] = useState([]);
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    axiosInstance
-      .get(`/sensor/${sensorType}?range=${timeRange}`)
-      .then((response) => {
-        setGraphData(response.data);
-      })
-      .catch((error) => console.error("Error fetching graph data:", error));
-  }, [sensorType, timeRange]);
+    useEffect(() => {
+        axiosInstance.get(`/sensor/${sensorType}`)
+            .then(response => {
+                setData(response.data);
+            })
+            .catch(error => {
+                console.error("Error fetching data:", error);
+            });
+    }, [sensorType]);
 
-  const chartData = {
-    labels: graphData.map((data) => new Date(data.timestamp).toLocaleString()),
-    datasets: [
-      {
-        label: `${sensorType.charAt(0).toUpperCase() + sensorType.slice(1)} Data`,
-        data: graphData.map((data) => data.value),
-        borderColor: "blue",
-        backgroundColor: "rgba(0, 0, 255, 0.3)",
-        fill: true,
-      },
-    ],
-  };
-
-  return (
-    <div>
-      <h2>{sensorType.charAt(0).toUpperCase() + sensorType.slice(1)} Graph</h2>
-      <label>
-        Time Range:
-        <select onChange={(e) => setTimeRange(e.target.value)} value={timeRange}>
-          <option value="day">Day</option>
-          <option value="week">Week</option>
-          <option value="month">Month</option>
-        </select>
-      </label>
-      <Line data={chartData} />
-    </div>
-  );
-}
+    return (
+        <div>
+            <button onClick={() => navigate('/home')} style={{ marginBottom: '10px' }}>Back to Home</button>
+            <h2>{sensorType} Graph</h2>
+            <LineChart width={600} height={300} data={data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="timestamp" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="value" stroke="#8884d8" />
+            </LineChart>
+        </div>
+    );
+};
 
 export default Graph;
