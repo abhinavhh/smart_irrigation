@@ -134,21 +134,21 @@ const MultiSensorGraph = () => {
             <Line 
               type="monotone" 
               dataKey="Temperature" 
-              stroke="#ff0000" 
+              stroke="#FF4500" 
               dot={false}
               name="Temperature"
             />
             <Line 
               type="monotone" 
               dataKey="Humidity" 
-              stroke="#0000ff" 
+              stroke="#1E90FF" 
               dot={false}
               name="Humidity"
             />
             <Line 
               type="monotone" 
               dataKey="SoilMoisture" 
-              stroke="#00ff00" 
+              stroke="#32CD32" 
               dot={false}
               name="Soil Moisture"
             />
