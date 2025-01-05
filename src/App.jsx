@@ -11,6 +11,8 @@ import Register from "./Pages/Register";
 import { useState,useEffect } from "react";
 import ResetPasswordRequest from "./Components/ResetPassword";
 import ForgotPassword from "./Components/ForgotPassword";
+import Notification  from "./Components/Notifications";
+import MultiSensorGraph from "./Components/MultiSensorGraph";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -45,6 +47,7 @@ function App() {
         <Route path="/graph/:sensorType" element={<Graph/>}/>
         <Route path="/controlpanel" element={<ControlPanel/>}/>
         <Route path="/profile" element={<Profile/>}/>
+        <Route path="/multi-sensor-graph" element={<MultiSensorGraph/>}/>
       </Routes>
     
     </>

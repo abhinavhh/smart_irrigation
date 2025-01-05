@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import dayjs from 'dayjs';
 
-const Graph = () => {
-  const { sensorType } = useParams();
+const MultiSensorGraph = () => {
   const [rawData, setRawData] = useState([]);
   const [displayData, setDisplayData] = useState([]);
   const [filter, setFilter] = useState('day');
   const navigate = useNavigate();
 
-  // Filter raw data based on selected time range
+  // Filter data based on time range
   useEffect(() => {
     const filterData = () => {
       const now = dayjs();
@@ -34,26 +33,33 @@ const Graph = () => {
         dayjs(item.timestamp).isAfter(cutoff)
       );
 
-      setDisplayData(filtered);
+      // Group data by timestamp to combine sensor readings
+      const groupedData = filtered.reduce((acc, curr) => {
+        const timestamp = curr.timestamp;
+        if (!acc[timestamp]) {
+          acc[timestamp] = { timestamp };
+        }
+        acc[timestamp][curr.sensorType] = curr.value;
+        return acc;
+      }, {});
+
+      setDisplayData(Object.values(groupedData));
     };
 
     filterData();
   }, [filter, rawData]);
 
-  // WebSocket connection for real-time updates
+  // WebSocket connection
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:8080/ws/sensor-data");
 
     socket.onmessage = (event) => {
       try {
         const receivedData = JSON.parse(event.data);
-        if (receivedData.sensorType === sensorType) {
-          setRawData(prevData => {
-            const newData = [...prevData, receivedData];
-            // Keep last 1000 data points to prevent memory issues
-            return newData.slice(-1000);
-          });
-        }
+        setRawData(prevData => {
+          const newData = [...prevData, receivedData];
+          return newData.slice(-1000); // Keep last 1000 data points
+        });
       } catch (error) {
         console.error("Error parsing WebSocket data:", error);
       }
@@ -64,7 +70,7 @@ const Graph = () => {
     };
 
     return () => socket.close();
-  }, [sensorType]);
+  }, []);
 
   const formatXAxis = (timestamp) => {
     const date = dayjs(timestamp);
@@ -78,6 +84,11 @@ const Graph = () => {
       default:
         return date.format('HH:mm');
     }
+  };
+
+  const formatTooltipValue = (value, name) => {
+    const unit = name === 'Temperature' ? '°C' : '%';
+    return `${value}${unit}`;
   };
 
   return (
@@ -104,7 +115,7 @@ const Graph = () => {
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold mb-4">{sensorType} Real-Time Graph</h2>
+      <h2 className="text-2xl font-bold mb-4">Real-Time Sensor Readings</h2>
 
       <div className="border rounded p-4 bg-white shadow">
         <ResponsiveContainer width="100%" height={400}>
@@ -117,20 +128,53 @@ const Graph = () => {
             <YAxis />
             <Tooltip 
               labelFormatter={(timestamp) => dayjs(timestamp).format('YYYY-MM-DD HH:mm:ss')}
+              formatter={formatTooltipValue}
             />
             <Legend />
             <Line 
               type="monotone" 
-              dataKey="value" 
-              stroke="#8884d8" 
-              animationDuration={1500}
+              dataKey="Temperature" 
+              stroke="#ff0000" 
               dot={false}
+              name="Temperature"
+            />
+            <Line 
+              type="monotone" 
+              dataKey="Humidity" 
+              stroke="#0000ff" 
+              dot={false}
+              name="Humidity"
+            />
+            <Line 
+              type="monotone" 
+              dataKey="SoilMoisture" 
+              stroke="#00ff00" 
+              dot={false}
+              name="Soil Moisture"
             />
           </LineChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Current Values Display */}
+      <div className="mt-4 grid grid-cols-3 gap-4">
+        {['Temperature', 'Humidity', 'SoilMoisture'].map(sensor => {
+          const latestData = displayData[displayData.length - 1];
+          const value = latestData ? latestData[sensor] : 'N/A';
+          const unit = sensor === 'Temperature' ? '°C' : '%';
+          
+          return (
+            <div key={sensor} className="p-4 border rounded bg-white shadow">
+              <h3 className="font-bold">{sensor}</h3>
+              <p className="text-2xl">
+                {value !== 'N/A' ? `${value}${unit}` : 'N/A'}
+              </p>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 };
 
-export default Graph;
+export default MultiSensorGraph;

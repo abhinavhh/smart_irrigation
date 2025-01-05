@@ -56,7 +56,12 @@ const Home = () => {
                     </div>
                 ))}
             </div>
-
+            <button 
+                onClick={() => navigate('/multi-sensor-graph')}
+                style={{ marginTop: '20px' }}
+            >
+                View Sensor Graph
+            </button>
             <button onClick={() => navigate('/addCrop')} style={{ marginTop: '20px' }}>Add Crop</button>
             <button onClick={() => navigate('/control-panel')} style={{ position: 'fixed', bottom: '10px', right: '10px' }}>
                 Control Panel
