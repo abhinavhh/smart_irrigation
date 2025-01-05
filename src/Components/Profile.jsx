@@ -11,19 +11,26 @@ const Profile = () => {
 
     useEffect(() => {
         if (!username) {
+            alert("user not found");
             navigate('/login');
         }
-
-        axiosInstance.get(`/user/profile/${username}`)
+        console.log("Username being sent to backend:", username);
+        axiosInstance.get(`/user/${username}`)
             .then(response => {
                 setUserData(response.data);
                 setFormData(response.data);
             })
-            .catch(() => {
-                alert("Failed to fetch user data.");
+            .catch(error => {
+                // Check if error has a response object (for error from server)
+                if (error.response) {
+                    alert("Failed to fetch user data: " + error.response.data);
+                } else {
+                    // Handle network or unexpected errors
+                    alert("Error: " + error.message);
+                }
                 navigate('/login');
             });
-    }, [navigate, username]);
+    }, [username,navigate]);
 
     const handleEditToggle = () => {
         setEditing(!editing);
@@ -35,7 +42,7 @@ const Profile = () => {
 
     const handleSaveChanges = async () => {
         try {
-            await axiosInstance.put('/user/profile/update', formData);
+            await axiosInstance.put('/user/update', formData);
             alert('Profile updated successfully');
             localStorage.setItem("username", formData.username);
             setUserData(formData);
