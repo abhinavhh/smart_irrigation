@@ -30,6 +30,7 @@ function App() {
     setIsAuthenticated(false);
   };
   return (
+    <Login/>
     <Router>
       <Routes>
         <Route path="/register" element={<Register />} />
