@@ -1,17 +1,16 @@
-import React, { useState , useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axios";
 
 function Login({ onLogin }) {
-  const [formData, setFormData] = useState({ username: '', password: '' });
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem("username");
     if (loggedInUser) {
-        navigate("/home");
+      navigate("/home");
     }
   }, [navigate]);
 
@@ -19,12 +18,15 @@ function Login({ onLogin }) {
     e.preventDefault();
 
     try {
-        const response = await axiosInstance.post('/auth/login', formData);
-        localStorage.setItem("username", formData.username);
-        alert(response.data);
-        navigate('/home');  // Redirect to the home page on success
+      const response = await axiosInstance.post("/auth/login", formData);
+      
+      // Assuming response contains { userId, username }
+      localStorage.setItem("username", formData.username);
+      localStorage.setItem("userId", response.data.userId);  // Store userId too
+      alert(response.data.message);  // Assuming response contains message
+      navigate("/home"); // Redirect to home on success
     } catch (error) {
-        setError("Invalid username or password");
+      setError("Invalid username or password");
     }
   };
 

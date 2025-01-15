@@ -21,19 +21,21 @@ const Profile = () => {
                 setFormData(response.data);
             })
             .catch(error => {
-                // Check if error has a response object (for error from server)
                 if (error.response) {
                     alert("Failed to fetch user data: " + error.response.data);
                 } else {
-                    // Handle network or unexpected errors
                     alert("Error: " + error.message);
                 }
                 navigate('/login');
             });
-    }, [username,navigate]);
+    }, [username, navigate]);
 
     const handleEditToggle = () => {
         setEditing(!editing);
+        if (!editing) {
+            // Reset form data to current user data when starting to edit
+            setFormData(userData);
+        }
     };
 
     const handleChange = (e) => {
@@ -42,10 +44,12 @@ const Profile = () => {
 
     const handleSaveChanges = async () => {
         try {
-            await axiosInstance.put('/user/update', formData);
+            const response = await axiosInstance.put('/user/update', formData);
+            // Update both userData and formData with the response
+            setUserData(response.data);
+            setFormData(response.data);
+            localStorage.setItem("username", response.data.username);
             alert('Profile updated successfully');
-            localStorage.setItem("username", formData.username);
-            setUserData(formData);
             setEditing(false);
         } catch (error) {
             alert('Error updating profile');

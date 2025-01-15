@@ -30,7 +30,7 @@ const Graph = () => {
           cutoff = now.subtract(24, 'hour');
       }
 
-      const filtered = rawData.filter(item => 
+      const filtered = rawData.filter((item) => 
         dayjs(item.timestamp).isAfter(cutoff)
       );
 
@@ -48,7 +48,7 @@ const Graph = () => {
       try {
         const receivedData = JSON.parse(event.data);
         if (receivedData.sensorType === sensorType) {
-          setRawData(prevData => {
+          setRawData((prevData) => {
             const newData = [...prevData, receivedData];
             // Keep last 1000 data points to prevent memory issues
             return newData.slice(-1000);

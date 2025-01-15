@@ -1,35 +1,46 @@
-import React, { useState } from "react";
-import axiosInstance from "../api/axios";
+import React, { useState } from 'react';
+import axiosInstance from '../api/axios';
+import { useNavigate } from 'react-router-dom';
 
-function AddCrop() {
-  const [cropName, setCropName] = useState("");
+const AddCrop = () => {
+    const [cropData, setCropData] = useState({
+        name: '',
+        minSoilMoisture: '',
+        maxSoilMoisture: '',
+        minTemperature: '',
+        maxTemperature: '',
+        minHumidity: '',
+        maxHumidity: ''
+    });
+    const navigate = useNavigate();
 
-  const handleAddCrop = (e) => {
-    e.preventDefault();
+    const handleChange = (e) => {
+        setCropData({ ...cropData, [e.target.name]: e.target.value });
+    };
 
-    axiosInstance
-      .post("/crops/add", { name: cropName })
-      .then((response) => {
-        console.log("Crop added:", response.data);
-      })
-      .catch((error) => {
-        console.error("Error adding crop:", error);
-      });
-  };
+    const handleSubmit = async () => {
+        try {
+            await axiosInstance.post('/crops/add', cropData);
+            alert('Crop Added Successfully!');
+            navigate('/home');
+        } catch (error) {
+            alert('Failed to add crop.');
+        }
+    };
 
-  return (
-    <form onSubmit={handleAddCrop}>
-      <label>
-        Crop Name:
-        <input
-          type="text"
-          value={cropName}
-          onChange={(e) => setCropName(e.target.value)}
-        />
-      </label>
-      <button type="submit">Add Crop</button>
-    </form>
-  );
-}
+    return (
+        <div>
+            <h2>Add Crop</h2>
+            <input type="text" name="name" placeholder="Crop Name" onChange={handleChange} />
+            <input type="number" name="minSoilMoisture" placeholder="Min Soil Moisture" onChange={handleChange} />
+            <input type="number" name="maxSoilMoisture" placeholder="Max Soil Moisture" onChange={handleChange} />
+            <input type="number" name="minTemperature" placeholder="Min Temperature" onChange={handleChange} />
+            <input type="number" name="maxTemperature" placeholder="Max Temperature" onChange={handleChange} />
+            <input type="number" name="minHumidity" placeholder="Min Humidity" onChange={handleChange} />
+            <input type="number" name="maxHumidity" placeholder="Max Humidity" onChange={handleChange} />
+            <button onClick={handleSubmit}>Add Crop</button>
+        </div>
+    );
+};
 
 export default AddCrop;
