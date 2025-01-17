@@ -44,7 +44,11 @@ const Profile = () => {
 
     const handleSaveChanges = async () => {
         try {
-            const response = await axiosInstance.put('/user/update', formData);
+            const currentUsername = userData.username;
+            const response = await axiosInstance.put(`/user/update?currentUsername=${currentUsername}`, {
+                username: formData.username,
+                email: formData.email,
+            });
             // Update both userData and formData with the response
             setUserData(response.data);
             setFormData(response.data);
