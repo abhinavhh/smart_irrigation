@@ -13,6 +13,8 @@ import ResetPasswordRequest from "./Components/ResetPassword";
 import ForgotPassword from "./Components/ForgotPassword";
 import Notification  from "./Components/Notifications";
 import MultiSensorGraph from "./Components/MultiSensorGraph";
+import '@mantine/core/styles.css';
+import { MantineProvider } from '@mantine/core';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -32,7 +34,7 @@ function App() {
     setIsAuthenticated(false);
   };
   return (
-    <>
+    <MantineProvider>
     
       <Routes>
         <Route path="/register" element={<Register />} />
@@ -50,7 +52,7 @@ function App() {
         <Route path="/multi-sensor-graph" element={<MultiSensorGraph/>}/>
       </Routes>
     
-    </>
+    </MantineProvider>
   );
 }
 
