@@ -4,11 +4,14 @@ import axiosInstance from '../api/axios';
 const ControlPanel = () => {
     const [crops, setCrops] = useState([]);
     const [selectedCrop, setSelectedCrop] = useState('');
+    const [cropDetails, setCropDetails] = useState(null);
     const [sensorData, setSensorData] = useState({
         soilMoisture: 'N/A',
         temperature: 'N/A',
-        humidity: 'N/A'
+        humidity: 'N/A',
     });
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
     const [manualControl, setManualControl] = useState(false);
     const [irrigationStatus, setIrrigationStatus] = useState('');
 
@@ -18,6 +21,14 @@ const ControlPanel = () => {
             .then(response => setCrops(response.data))
             .catch(error => console.error("Error fetching crops:", error));
     }, []);
+
+    /** ✅ Fetch Crop Details when a Crop is Selected */
+    useEffect(() => {
+        if (selectedCrop) {
+            const crop = crops.find(c => c.id === parseInt(selectedCrop));
+            setCropDetails(crop || null);
+        }
+    }, [selectedCrop, crops]);
 
     /** ✅ Real-Time WebSocket Sensor Data Handling */
     useEffect(() => {
@@ -42,8 +53,19 @@ const ControlPanel = () => {
     /** ✅ Trigger Automatic Irrigation Analysis */
     const analyzeIrrigation = async () => {
         try {
-            await axiosInstance.post(`/irrigation/analyze/${selectedCrop}`);
-            alert('Irrigation analysis completed successfully!');
+            if (!startTime || !endTime) {
+                alert('Please set a start and end time for irrigation.');
+                return;
+            }
+
+            const payload = {
+                cropId: selectedCrop,
+                startTime,
+                endTime,
+            };
+
+            await axiosInstance.post(`/irrigation/analyze/${selectedCrop}`, payload);
+            alert('Irrigation analysis started successfully!');
         } catch (error) {
             alert('Error in irrigation analysis.');
         }
@@ -60,37 +82,97 @@ const ControlPanel = () => {
     };
 
     return (
-        <div>
-            <h2>Control Panel</h2>
+        <div className="min-h-screen bg-gradient-to-r from-blue-50 to-blue-100 flex flex-col items-center py-10">
+            <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg p-6 space-y-8 animate-fadeIn">
+                <h2 className="text-3xl font-bold text-gray-800 text-center">Control Panel</h2>
 
-            {/* ✅ Crop Selection Dropdown */}
-            <label>Select Crop: </label>
-            <select onChange={(e) => setSelectedCrop(e.target.value)}>
-                <option value="">Select a Crop</option>
-                {crops.map((crop) => (
-                    <option key={crop.id} value={crop.id}>{crop.name}</option>
-                ))}
-            </select>
+                {/* ✅ Crop Selection Dropdown */}
+                <div>
+                    <label className="block text-lg font-semibold text-gray-700 mb-2">Select Crop:</label>
+                    <select
+                        onChange={(e) => setSelectedCrop(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                        <option value="">Select a Crop</option>
+                        {crops.map((crop) => (
+                            <option key={crop.id} value={crop.id}>{crop.name}</option>
+                        ))}
+                    </select>
+                </div>
 
-            {/* ✅ Display Real-Time Sensor Data */}
-            <div>
-                <h3>Real-Time Sensor Data:</h3>
-                <p>Soil Moisture: {sensorData.soilMoisture}</p>
-                <p>Temperature: {sensorData.temperature}</p>
-                <p>Humidity: {sensorData.humidity}</p>
+                {/* ✅ Display Selected Crop Thresholds */}
+                {cropDetails && (
+                    <div className="bg-gray-100 p-4 rounded-lg shadow-sm">
+                        <h3 className="text-xl font-semibold text-gray-800 mb-4">Crop Thresholds:</h3>
+                        <p className="text-gray-700">Min Temperature: <span className="font-semibold">{cropDetails.minTemperature}°C</span></p>
+                        <p className="text-gray-700">Max Temperature: <span className="font-semibold">{cropDetails.maxTemperature}°C</span></p>
+                        <p className="text-gray-700">Min Humidity: <span className="font-semibold">{cropDetails.minHumidity}%</span></p>
+                        <p className="text-gray-700">Max Humidity: <span className="font-semibold">{cropDetails.maxHumidity}%</span></p>
+                        <p className="text-gray-700">Min Soil Moisture: <span className="font-semibold">{cropDetails.minSoilMoisture}%</span></p>
+                        <p className="text-gray-700">Max Soil Moisture: <span className="font-semibold">{cropDetails.maxSoilMoisture}%</span></p>
+                    </div>
+                )}
+
+                {/* ✅ Set Irrigation Time Window */}
+                <div className="bg-gray-100 p-4 rounded-lg shadow-sm">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Set Irrigation Time Window:</h3>
+                    <div className="flex space-x-4">
+                        <div>
+                            <label className="block text-gray-700 font-semibold mb-2">Start Time:</label>
+                            <input
+                                type="time"
+                                value={startTime}
+                                onChange={(e) => setStartTime(e.target.value)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 font-semibold mb-2">End Time:</label>
+                            <input
+                                type="time"
+                                value={endTime}
+                                onChange={(e) => setEndTime(e.target.value)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* ✅ Display Real-Time Sensor Data */}
+                <div className="bg-gray-100 p-4 rounded-lg shadow-sm">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Real-Time Sensor Data:</h3>
+                    <p className="text-gray-700">Soil Moisture: <span className="font-semibold">{sensorData.soilMoisture}%</span></p>
+                    <p className="text-gray-700">Temperature: <span className="font-semibold">{sensorData.temperature}°C</span></p>
+                    <p className="text-gray-700">Humidity: <span className="font-semibold">{sensorData.humidity}%</span></p>
+                </div>
+
+                {/* ✅ Control Buttons */}
+                <div className="flex justify-between">
+                    <button
+                        onClick={toggleManualControl}
+                        className={`px-6 py-2 text-white font-semibold rounded-lg shadow-lg transform transition-transform duration-300 ${
+                            manualControl ? 'bg-red-500 hover:scale-105' : 'bg-blue-500 hover:scale-105'
+                        }`}
+                    >
+                        {manualControl ? 'Close Valve' : 'Open Valve Manually'}
+                    </button>
+                    <button
+                        onClick={analyzeIrrigation}
+                        className="px-6 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transform transition-transform duration-300"
+                    >
+                        Analyze Irrigation
+                    </button>
+                    <button
+                        onClick={fetchIrrigationStatus}
+                        className="px-6 py-2 bg-purple-500 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transform transition-transform duration-300"
+                    >
+                        Check Irrigation Status
+                    </button>
+                </div>
+
+                {/* ✅ Status Display */}
+                <p className="text-center text-gray-700 mt-4 font-semibold">{irrigationStatus}</p>
             </div>
-
-            {/* ✅ Manual Control Button */}
-            <button onClick={toggleManualControl}>
-                {manualControl ? 'Close Valve' : 'Open Valve Manually'}
-            </button>
-
-            {/* ✅ Analyze Irrigation Button */}
-            <button onClick={analyzeIrrigation}>Analyze Irrigation</button>
-
-            {/* ✅ Fetch Status Button */}
-            <button onClick={fetchIrrigationStatus}>Check Irrigation Status</button>
-            <p>Status: {irrigationStatus}</p>
         </div>
     );
 };

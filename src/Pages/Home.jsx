@@ -13,41 +13,51 @@ const Home = () => {
   const navigate = useNavigate();
   const [userCrops, setUserCrops] = useState([]); // Added for crops
 
+  // WebSocket setup
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8080/ws/sensor-data");
-
-    socket.onopen = () => {
-      console.log("WebSocket connected!");
-    };
-
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        setSensorData((prev) => ({
-          ...prev,
-          [data.sensorType]: data.value,
-        }));
-      } catch (error) {
-        console.error("Error parsing WebSocket message:", error);
-      }
-    };
-
-    socket.onerror = (error) => {
-      console.error("WebSocket Error:", error);
-    };
-
-
+    const socket = new WebSocket("ws://192.168.1.63:8080/ws/sensor-data");
+  
+      socket.onopen = () => {
+        console.log("WebSocket connected!");
+      };
+  
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log("Received sensor data:", data);
+          setSensorData((prev) => ({
+            ...prev,
+            [data.sensorType]: data.value,
+          }));
+        } catch (error) {
+          console.error("Error parsing WebSocket message:", error);
+        }
+      };
+  
+      socket.onerror = (error) => {
+        console.error("WebSocket Error:", error);
+      };
+  
+      socket.onclose = (event) => {
+        console.log("WebSocket closed:", event);
+        // setTimeout(connect, 5000); // Reconnect after 5 seconds
+      };
     return () => {
       socket.close();
-      console.log("WebSocket closed");
-    };
+      console.log("socket closed");
+    }
   }, []);
+  
 
+  // Fetch user crops from the backend
   useEffect(() => {
-    // Fetch user crops (simulating API call)
     const fetchCrops = async () => {
-      const crops = await fetch("/api/user/crops").then((res) => res.json());
-      setUserCrops(crops);
+      try {
+        const crops = await fetch("/api/user/crops").then((res) => res.json());
+        setUserCrops(crops);
+      } catch (error) {
+        console.error("Error fetching crops:", error);
+      }
     };
 
     fetchCrops();
@@ -88,9 +98,7 @@ const Home = () => {
           variants={itemVariants}
           className="flex justify-between items-center mb-10"
         >
-          <h1 className="text-4xl font-bold text-gray-800">
-            Smart Irrigation Dashboard
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-800">Smart Irrigation Dashboard</h1>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
