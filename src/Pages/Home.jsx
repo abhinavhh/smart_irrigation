@@ -10,51 +10,20 @@ const Home = () => {
     Humidity: "N/A",
     SoilMoisture: "N/A",
   });
+  const [userCrops, setUserCrops] = useState([]); // For crops
   const navigate = useNavigate();
-  const [userCrops, setUserCrops] = useState([]); // Added for crops
 
-  // WebSocket setup
-  useEffect(() => {
-    const socket = new WebSocket("ws://192.168.1.63:8080/ws/sensor-data");
-  
-      socket.onopen = () => {
-        console.log("WebSocket connected!");
-      };
-  
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log("Received sensor data:", data);
-          setSensorData((prev) => ({
-            ...prev,
-            [data.sensorType]: data.value,
-          }));
-        } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
-        }
-      };
-  
-      socket.onerror = (error) => {
-        console.error("WebSocket Error:", error);
-      };
-  
-      socket.onclose = (event) => {
-        console.log("WebSocket closed:", event);
-        // setTimeout(connect, 5000); // Reconnect after 5 seconds
-      };
-    return () => {
-      socket.close();
-      console.log("socket closed");
-    }
-  }, []);
-  
-
-  // Fetch user crops from the backend
+  // Fetch user crops directly using useEffect
   useEffect(() => {
     const fetchCrops = async () => {
       try {
-        const crops = await fetch("/api/user/crops").then((res) => res.json());
-        setUserCrops(crops);
+        const response = await fetch("/api/user/crops");
+        if (response.ok) {
+          const crops = await response.json();
+          setUserCrops(crops);
+        } else {
+          console.error("Error fetching crops:", response.statusText);
+        }
       } catch (error) {
         console.error("Error fetching crops:", error);
       }
@@ -62,6 +31,79 @@ const Home = () => {
 
     fetchCrops();
   }, []);
+
+  // WebSocket setup for real-time data
+  useEffect(() => {
+    let socket;
+    let intervalId;
+
+    const openSocket = () => {
+        socket = new WebSocket("ws://192.168.1.63:8080/ws/sensor-data");
+
+        socket.onopen = () => {
+            console.log("WebSocket connected!");
+        };
+
+        socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                console.log("Received sensor data:", data);
+                setSensorData((prevData) => ({
+                    ...prevData,
+                    Temperature: data.Temperature || prevData.Temperature,
+                    Humidity: data.Humidity || prevData.Humidity,
+                    SoilMoisture: data.SoilMoisture || prevData.SoilMoisture,
+                }));
+            } catch (error) {
+                console.error("Error parsing WebSocket message:", error);
+            }
+        };
+
+        socket.onerror = (error) => {
+            console.error("WebSocket Error:", error);
+        };
+
+        socket.onclose = (event) => {
+            console.log("WebSocket closed:", event);
+        };
+    };
+
+    const closeSocket = () => {
+        if (socket) {
+            socket.close();
+            console.log("WebSocket closed");
+        }
+    };
+
+    const requestData = () => {
+        if (socket.readyState === WebSocket.OPEN) {
+            socket.send("Request data"); // Send a request for new data
+            console.log("Requesting sensor data...");
+        }
+    };
+
+    // Start opening and closing the socket every 5 seconds
+    const manageSocket = () => {
+        openSocket();
+        requestData(); // Send request for data immediately upon connection
+
+        intervalId = setInterval(() => {
+            closeSocket(); // Close the existing connection before opening a new one
+            openSocket();  // Open a new connection
+            requestData(); // Send a new request for data
+        }, 5000); // 5000ms = 5 seconds
+    };
+
+    // Start socket management when the component mounts
+    manageSocket();
+
+    // Cleanup on component unmount
+    return () => {
+        clearInterval(intervalId); // Clear interval
+        closeSocket(); // Close socket when component unmounts
+    };
+}, []);
+
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -86,7 +128,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-100 via-blue-50 to-indigo-100 p-6 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 p-6 font-sans">
       <motion.div
         initial="hidden"
         animate="visible"
@@ -98,18 +140,18 @@ const Home = () => {
           variants={itemVariants}
           className="flex justify-between items-center mb-10"
         >
-          <h1 className="text-4xl font-bold text-gray-800">Smart Irrigation Dashboard</h1>
+          <h1 className="text-4xl font-bold text-teal-400">Smart Irrigation Dashboard</h1>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/profile")}
-            className="bg-white text-gray-800 px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
+            className="bg-gray-700 text-teal-400 px-4 py-2 rounded-full shadow-md hover:shadow-lg hover:bg-gray-600 transition-all duration-300 flex items-center space-x-2"
           >
             <UserCircleIcon className="w-5 h-5" />
             <span>Profile</span>
           </motion.button>
         </motion.div>
-
+  
         {/* Sensor Data */}
         <motion.div
           variants={containerVariants}
@@ -120,24 +162,24 @@ const Home = () => {
               key={key}
               variants={itemVariants}
               whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-              className="bg-white shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
+              className="bg-gray-800 shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
               onClick={() => navigate(`/graph/${key}`)}
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-gray-800">{key}</h3>
+                <h3 className="text-xl font-semibold text-teal-400">{key}</h3>
                 {key === "Temperature" ? (
-                  <ThermometerIcon className="w-8 h-8 text-red-500" />
+                  <ThermometerIcon className="w-8 h-8 text-red-400" />
                 ) : key === "Humidity" ? (
-                  <WaterDropIcon className="w-8 h-8 text-blue-500" />
+                  <WaterDropIcon className="w-8 h-8 text-blue-400" />
                 ) : (
-                  <LeafIcon className="w-8 h-8 text-green-500" />
+                  <LeafIcon className="w-8 h-8 text-green-400" />
                 )}
               </div>
-              <div className="text-4xl font-bold text-gray-700">{value}</div>
+              <div className="text-4xl font-bold text-gray-300">{value}</div>
             </motion.div>
           ))}
         </motion.div>
-
+  
         {/* User Crops */}
         {userCrops.length === 0 ? (
           <motion.button
@@ -145,7 +187,7 @@ const Home = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/addCrop")}
-            className="bg-teal-600 text-white px-6 py-3 rounded-full shadow-md hover:bg-teal-700 transition-all duration-300 flex items-center space-x-2 mx-auto"
+            className="bg-teal-600 text-white px-6 py-3 rounded-full shadow-md hover:bg-teal-500 transition-all duration-300 flex items-center space-x-2 mx-auto"
           >
             <PlusCircleIcon className="w-5 h-5" />
             <span>Add Crop</span>
@@ -158,9 +200,9 @@ const Home = () => {
                 variants={itemVariants}
                 whileHover={{ scale: 1.05 }}
                 onClick={() => navigate(`/crop-details/${crop.id}`)}
-                className="bg-white shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
+                className="bg-gray-800 shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
               >
-                <h3 className="text-xl font-semibold text-gray-800">{crop.name}</h3>
+                <h3 className="text-xl font-semibold text-teal-400">{crop.name}</h3>
                 <img
                   src={crop.image}
                   alt={crop.name}
@@ -170,7 +212,7 @@ const Home = () => {
             ))}
           </div>
         )}
-
+  
         {/* Buttons */}
         <motion.div
           variants={containerVariants}
@@ -181,19 +223,19 @@ const Home = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/multi-sensor-graph")}
-            className="bg-indigo-600 text-white px-6 py-3 rounded-full shadow-md hover:bg-indigo-700 transition-all duration-300 flex items-center space-x-2 mt-5"
+            className="bg-indigo-600 text-white px-6 py-3 rounded-full shadow-md hover:bg-indigo-500 transition-all duration-300 flex items-center space-x-2 mt-5"
           >
             <ChartBarIcon className="w-5 h-5" />
             <span>View Sensor Graph</span>
           </motion.button>
         </motion.div>
-
+  
         <motion.button
           variants={itemVariants}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate("/control-panel")}
-          className="bg-gray-800 text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-700 transition-all duration-300 flex items-center space-x-2 fixed bottom-8 right-8"
+          className="bg-gray-700 text-teal-400 px-6 py-3 rounded-full shadow-md hover:bg-gray-600 transition-all duration-300 flex items-center space-x-2 fixed bottom-8 right-8"
         >
           <CogIcon className="w-5 h-5" />
           <span>Control Panel</span>
@@ -201,6 +243,7 @@ const Home = () => {
       </motion.div>
     </div>
   );
+  
 };
 
 export default Home;
