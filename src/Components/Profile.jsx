@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -66,40 +66,75 @@ const Profile = () => {
     };
 
     return (
-        <div>
-            <h2>User Profile</h2>
-            <p>
-                <strong>Username:</strong>{" "}
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 ">
+        <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">User Profile</h2>
+            <div className="flex items-center justify-center">
+            <div id="profile" className="flex items-center justify-center bg-blue-500 text-white font-bold rounded-full h-16 w-16"><img src="https://icon-library.com/images/flat-user-icon/flat-user-icon-12.jpg" alt="user icon" /></div>
+            </div>
+            <div className="mb-4">
+                <label className="block text-gray-600 font-medium">
+                    Username:
+                </label>
                 {editing ? (
                     <input
                         type="text"
                         name="username"
                         value={formData.username}
                         onChange={handleChange}
+                        className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
                     />
                 ) : (
-                    userData.username
+                    <p className="text-gray-800">{userData.username}</p>
                 )}
-            </p>
-            <p>
-                <strong>Email:</strong>{" "}
+            </div>
+            <div className="mb-4">
+                <label className="block text-gray-600 font-medium">
+                    Email:
+                </label>
                 {editing ? (
                     <input
                         type="email"
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
+                        className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
                     />
                 ) : (
-                    userData.email
+                    <p className="text-gray-800">{userData.email}</p>
                 )}
-            </p>
-            <button onClick={handleEditToggle}>{editing ? "Cancel" : "Edit"}</button>
-            {editing && <button onClick={handleSaveChanges}>Save Changes</button>}
-            <button onClick={() => navigate('/reset-password')}>Reset Password</button>
-            <button onClick={handleLogout} style={{ marginTop: "10px" }}>Logout</button>
+            </div>
+            <div className="flex justify-between items-center mb-4">
+                <button
+                    onClick={handleEditToggle}
+                    className={`px-6 py-2 text-white rounded-full ${editing ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"}`}
+                >
+                    {editing ? "Cancel" : "Edit"}
+                </button>
+                {editing && (
+                    <button
+                        onClick={handleSaveChanges}
+                        className="px-4 py-2 text-white bg-green-500 rounded-full hover:bg-green-600"
+                    >
+                        Save Changes
+                    </button>
+                )}
+            </div>
+            <button
+                onClick={() => navigate('/reset-password')}
+                className="w-full px-4 py-2 text-white bg-green-500 rounded-full hover:bg-green-600 mb-4"
+            >
+                Reset Password
+            </button>
+            <button
+                onClick={handleLogout}
+                className="w-full px-4 py-2 text-white bg-red-500 rounded-full hover:bg-red-700"
+            >
+                Logout
+            </button>
         </div>
-    );
+    </div>
+);
 };
 
 export default Profile;

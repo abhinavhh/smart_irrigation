@@ -25,7 +25,7 @@ function Login({ onLogin }) {
       alert(response.data.message);
       navigate("/home");
     } catch (error) {
-      setError("Invalid username or password");
+      setError("Invalid username or password",error);
     }
   };
 
