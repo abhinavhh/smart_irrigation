@@ -18,78 +18,64 @@ const Graph = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [timeRange, setTimeRange] = useState("day");
   const navigate = useNavigate();
-  const socketRef = useRef(null);
 
-  // WebSocket connection for real-time data
+  // Function to fetch data from the database
+  const fetchData = async (sensorType, timeRange) => {
+    const startDate = dayjs().subtract(timeRange === "week" ? 7 : timeRange === "month" ? 30 : 1, "day").toISOString();
+    try {
+      const response = await fetch(`/api/sensor-data/${sensorType}?startDate=${startDate}`);
+      const data = await response.json();
+
+      setRawData(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  // Fetch data whenever the sensor type or time range changes
   useEffect(() => {
-    socketRef.current = new WebSocket("ws://192.168.1.63:8080/ws/sensor-data");
+    fetchData(sensorType, timeRange);
+  }, [sensorType, timeRange]);
 
-    socketRef.current.onopen = () => {
-      console.log("WebSocket connected!");
-    };
+  // Aggregate the data for week and month
+  useEffect(() => {
+    const aggregateData = () => {
+      let aggregatedData = [];
+      if (timeRange === "day") {
+        aggregatedData = rawData.map((data) => ({
+          timestamp: data.timestamp,
+          value: data.value,
+        }));
+      } else if (timeRange === "week") {
+        // Group by day and calculate average for each day
+        let dailyData = {};
+        rawData.forEach((data) => {
+          const day = dayjs(data.timestamp).format("YYYY-MM-DD");
+          if (!dailyData[day]) dailyData[day] = [];
+          dailyData[day].push(data.value);
+        });
 
-    socketRef.current.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data[sensorType]) {
-          const newData = {
-            timestamp: Date.now(),
-            value: data[sensorType],
-          };
-
-          setRawData((prevData) => {
-            const updatedData = [...prevData, newData];
-            // Keep only the last 1000 data points
-            return updatedData.slice(-1000);
-          });
+        aggregatedData = Object.keys(dailyData).map((day) => {
+          const avgValue = dailyData[day].reduce((sum, value) => sum + value, 0) / dailyData[day].length;
+          return { timestamp: day, value: avgValue };
+        });
+      } else if (timeRange === "month") {
+        // Group by 3 days and calculate average for each 3-day period
+        let threeDayData = [];
+        for (let i = 0; i < rawData.length; i += 3) {
+          const group = rawData.slice(i, i + 3);
+          const avgValue = group.reduce((sum, data) => sum + data.value, 0) / group.length;
+          const startDate = dayjs(group[0].timestamp).format("YYYY-MM-DD");
+          threeDayData.push({ timestamp: startDate, value: avgValue });
         }
-      } catch (error) {
-        console.error("Error parsing WebSocket data:", error);
-      }
-    };
-
-    socketRef.current.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
-        console.log("WebSocket disconnected!");
-      }
-    };
-  }, [sensorType]);
-
-  // Filter data based on the selected time range
-  useEffect(() => {
-    const filterData = () => {
-      const now = dayjs();
-      let cutoff;
-
-      switch (timeRange) {
-        case "day":
-          cutoff = now.subtract(1, "day");
-          break;
-        case "week":
-          cutoff = now.subtract(7, "day");
-          break;
-        case "month":
-          cutoff = now.subtract(1, "month");
-          break;
-        default:
-          cutoff = now.subtract(1, "day");
+        aggregatedData = threeDayData;
       }
 
-      const filtered = rawData.filter((data) =>
-        dayjs(data.timestamp).isAfter(cutoff)
-      );
-      setFilteredData(filtered);
+      setFilteredData(aggregatedData);
     };
 
-    // Update the filtered data every 5 seconds
-    const interval = setInterval(filterData, 5000);
-    return () => clearInterval(interval);
-  }, [timeRange, rawData]);
+    aggregateData();
+  }, [rawData, timeRange]);
 
   // Format X-axis labels based on the selected time range
   const formatXAxis = (timestamp) => {
