@@ -134,8 +134,10 @@ const Profile = () => {
                     Logout
                 </button>
             </div>
+
         </div>
-    );
+    
+);
 };
 
 export default Profile;

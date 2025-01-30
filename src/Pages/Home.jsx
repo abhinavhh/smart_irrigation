@@ -140,15 +140,17 @@ const Home = () => {
           variants={itemVariants}
           className="flex justify-between items-center mb-10"
         >
+
           <h1 className="text-4xl font-bold text-teal-400">Smart Irrigation Dashboard</h1>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/profile")}
             className="bg-gray-700 text-teal-400 px-4 py-2 rounded-full shadow-md hover:shadow-lg hover:bg-gray-600 transition-all duration-300 flex items-center space-x-2"
+
           >
             <UserCircleIcon className="w-5 h-5" />
-            <span>Profile</span>
+            <span className="text-white">Profile</span>
           </motion.button>
         </motion.div>
   

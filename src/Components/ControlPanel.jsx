@@ -82,6 +82,7 @@ const ControlPanel = () => {
     };
 
     return (
+
         <div className="min-h-screen bg-gradient-to-r from-gray-900 to-gray-800 text-gray-200 flex flex-col items-center py-10">
             <div className="w-full max-w-4xl bg-gray-800 shadow-lg rounded-lg p-6 space-y-8 animate-fadeIn">
                 <h2 className="text-3xl font-bold text-gray-100 text-center">Control Panel</h2>
@@ -172,6 +173,7 @@ const ControlPanel = () => {
 
                 {/* ✅ Status Display */}
                 <p className="text-center text-gray-100 mt-4 font-semibold">{irrigationStatus}</p>
+
             </div>
         </div>
     );
