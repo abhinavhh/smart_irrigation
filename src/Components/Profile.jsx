@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { FiEdit3, FiSave, FiLogOut, FiUser, FiKey } from 'react-icons/fi';
@@ -62,7 +62,7 @@ const Profile = () => {
             alert('Profile updated successfully');
             setEditing(false);
         } catch (error) {
-            alert('Error updating profile');
+            alert('Error updating profile',error);
         }
     };
 
@@ -72,6 +72,7 @@ const Profile = () => {
     };
 
     return (
+
         <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col items-center p-10">
             <FiUser className="text-6xl mb-4" />
             <h2 className="text-2xl font-semibold">{userData.username}</h2>
@@ -149,9 +150,10 @@ const Profile = () => {
 
                 
             </div>
-          
+
         </div>
-    );
+    
+);
 };
 
 export default Profile;

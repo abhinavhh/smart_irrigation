@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,7 +24,7 @@ const AddCrop = () => {
             alert('Crop Added Successfully!');
             navigate('/home');
         } catch (error) {
-            alert('Failed to add crop.');
+            alert('Failed to add crop.',error);
         }
     };
 
