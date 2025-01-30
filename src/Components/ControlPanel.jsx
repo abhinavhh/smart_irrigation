@@ -53,21 +53,30 @@ const ControlPanel = () => {
     /** ✅ Trigger Automatic Irrigation Analysis */
     const analyzeIrrigation = async () => {
         try {
+            if (!selectedCrop) {
+                alert('Please select a crop.');
+                return;
+            }
             if (!startTime || !endTime) {
                 alert('Please set a start and end time for irrigation.');
                 return;
             }
 
+            // Prepare the payload with cropId and irrigation times
             const payload = {
                 cropId: selectedCrop,
                 startTime,
                 endTime,
             };
 
-            await axiosInstance.post(`/irrigation/analyze/${selectedCrop}`, payload);
-            alert('Irrigation analysis started successfully!');
+            // Send the irrigation time data to the backend
+            const response = await axiosInstance.post(`/irrigation/analyze/${selectedCrop}`, payload);
+            
+            // Assuming the backend returns a detailed message about irrigation status
+            setIrrigationStatus(response.data.message || 'Analysis completed.');
         } catch (error) {
-            alert('Error in irrigation analysis.',error);
+            console.error('Error in irrigation analysis:', error);
+            alert('Error in irrigation analysis.');
         }
     };
 
@@ -77,12 +86,11 @@ const ControlPanel = () => {
             const response = await axiosInstance.get('/irrigation/status');
             setIrrigationStatus(response.data);
         } catch (error) {
-            alert('Error fetching irrigation status.',error);
+            alert('Error fetching irrigation status.', error);
         }
     };
 
     return (
-
         <div className="min-h-screen bg-gradient-to-r from-gray-900 to-gray-800 text-gray-200 flex flex-col items-center py-10">
             <div className="w-full max-w-4xl bg-gray-800 shadow-lg rounded-lg p-6 space-y-8 animate-fadeIn">
                 <h2 className="text-3xl font-bold text-gray-100 text-center">Control Panel</h2>
@@ -171,9 +179,13 @@ const ControlPanel = () => {
                     </button>
                 </div>
 
-                {/* ✅ Status Display */}
-                <p className="text-center text-gray-100 mt-4 font-semibold">{irrigationStatus}</p>
-
+                {/* ✅ Analysis Result Display */}
+                {irrigationStatus && (
+                    <div className="mt-4 p-4 bg-gray-700 text-gray-100 rounded-lg">
+                        <h3 className="text-lg font-semibold">Irrigation Analysis Result:</h3>
+                        <p>{irrigationStatus}</p>
+                    </div>
+                )}
             </div>
         </div>
     );
