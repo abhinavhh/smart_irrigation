@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axiosInstance from '../api/axios';
 
 const ControlPanel = () => {
@@ -67,7 +67,7 @@ const ControlPanel = () => {
             await axiosInstance.post(`/irrigation/analyze/${selectedCrop}`, payload);
             alert('Irrigation analysis started successfully!');
         } catch (error) {
-            alert('Error in irrigation analysis.');
+            alert('Error in irrigation analysis.',error);
         }
     };
 
@@ -77,21 +77,21 @@ const ControlPanel = () => {
             const response = await axiosInstance.get('/irrigation/status');
             setIrrigationStatus(response.data);
         } catch (error) {
-            alert('Error fetching irrigation status.');
+            alert('Error fetching irrigation status.',error);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-r from-blue-50 to-blue-100 flex flex-col items-center py-10">
-            <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg p-6 space-y-8 animate-fadeIn">
-                <h2 className="text-3xl font-bold text-gray-800 text-center">Control Panel</h2>
+        <div className="min-h-screen bg-gradient-to-r from-gray-900 to-gray-800 text-gray-200 flex flex-col items-center py-10">
+            <div className="w-full max-w-4xl bg-gray-800 shadow-lg rounded-lg p-6 space-y-8 animate-fadeIn">
+                <h2 className="text-3xl font-bold text-gray-100 text-center">Control Panel</h2>
 
                 {/* ✅ Crop Selection Dropdown */}
                 <div>
-                    <label className="block text-lg font-semibold text-gray-700 mb-2">Select Crop:</label>
+                    <label className="block text-lg font-semibold text-gray-300 mb-2">Select Crop:</label>
                     <select
                         onChange={(e) => setSelectedCrop(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-200 focus:ring-blue-500"
                     >
                         <option value="">Select a Crop</option>
                         {crops.map((crop) => (
@@ -102,23 +102,23 @@ const ControlPanel = () => {
 
                 {/* ✅ Display Selected Crop Thresholds */}
                 {cropDetails && (
-                    <div className="bg-gray-100 p-4 rounded-lg shadow-sm">
-                        <h3 className="text-xl font-semibold text-gray-800 mb-4">Crop Thresholds:</h3>
-                        <p className="text-gray-700">Min Temperature: <span className="font-semibold">{cropDetails.minTemperature}°C</span></p>
-                        <p className="text-gray-700">Max Temperature: <span className="font-semibold">{cropDetails.maxTemperature}°C</span></p>
-                        <p className="text-gray-700">Min Humidity: <span className="font-semibold">{cropDetails.minHumidity}%</span></p>
-                        <p className="text-gray-700">Max Humidity: <span className="font-semibold">{cropDetails.maxHumidity}%</span></p>
-                        <p className="text-gray-700">Min Soil Moisture: <span className="font-semibold">{cropDetails.minSoilMoisture}%</span></p>
-                        <p className="text-gray-700">Max Soil Moisture: <span className="font-semibold">{cropDetails.maxSoilMoisture}%</span></p>
+                    <div className="bg-gray-700 p-4 rounded-lg">
+                        <h3 className="text-xl font-semibold text-gray-100 mb-4">Crop Thresholds:</h3>
+                        <p className="text-green-100">Min Temperature: <span className="font-semibold">{cropDetails.minTemperature}°C</span></p>
+                        <p className="text-gray-100">Max Temperature: <span className="font-semibold">{cropDetails.maxTemperature}°C</span></p>
+                        <p className="text-gray-100">Min Humidity: <span className="font-semibold">{cropDetails.minHumidity}%</span></p>
+                        <p className="text-gray-100">Max Humidity: <span className="font-semibold">{cropDetails.maxHumidity}%</span></p>
+                        <p className="text-gray-100">Min Soil Moisture: <span className="font-semibold">{cropDetails.minSoilMoisture}%</span></p>
+                        <p className="text-gray-100">Max Soil Moisture: <span className="font-semibold">{cropDetails.maxSoilMoisture}%</span></p>
                     </div>
                 )}
 
                 {/* ✅ Set Irrigation Time Window */}
-                <div className="bg-gray-100 p-4 rounded-lg shadow-sm">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Set Irrigation Time Window:</h3>
+                <div className="bg-gray-700 p-4 rounded-lg">
+                    <h3 className="text-xl font-semibold text-gray-100 mb-4">Set Irrigation Time Window:</h3>
                     <div className="flex space-x-4">
                         <div>
-                            <label className="block text-gray-700 font-semibold mb-2">Start Time:</label>
+                            <label className="block text-gray-100 font-semibold mb-2">Start Time:</label>
                             <input
                                 type="time"
                                 value={startTime}
@@ -127,7 +127,7 @@ const ControlPanel = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700 font-semibold mb-2">End Time:</label>
+                            <label className="block text-gray-100 font-semibold mb-2">End Time:</label>
                             <input
                                 type="time"
                                 value={endTime}
@@ -139,11 +139,11 @@ const ControlPanel = () => {
                 </div>
 
                 {/* ✅ Display Real-Time Sensor Data */}
-                <div className="bg-gray-100 p-4 rounded-lg shadow-sm">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Real-Time Sensor Data:</h3>
-                    <p className="text-gray-700">Soil Moisture: <span className="font-semibold">{sensorData.soilMoisture}%</span></p>
-                    <p className="text-gray-700">Temperature: <span className="font-semibold">{sensorData.temperature}°C</span></p>
-                    <p className="text-gray-700">Humidity: <span className="font-semibold">{sensorData.humidity}%</span></p>
+                <div className="bg-gray-700 p-4 rounded-lg shadow-sm">
+                    <h3 className="text-xl font-semibold text-gray-100 mb-4">Real-Time Sensor Data:</h3>
+                    <p className="text-gray-100">Soil Moisture: <span className="font-semibold">{sensorData.soilMoisture}%</span></p>
+                    <p className="text-gray-100">Temperature: <span className="font-semibold">{sensorData.temperature}°C</span></p>
+                    <p className="text-gray-100">Humidity: <span className="font-semibold">{sensorData.humidity}%</span></p>
                 </div>
 
                 {/* ✅ Control Buttons */}
@@ -171,7 +171,7 @@ const ControlPanel = () => {
                 </div>
 
                 {/* ✅ Status Display */}
-                <p className="text-center text-gray-700 mt-4 font-semibold">{irrigationStatus}</p>
+                <p className="text-center text-gray-100 mt-4 font-semibold">{irrigationStatus}</p>
             </div>
         </div>
     );
