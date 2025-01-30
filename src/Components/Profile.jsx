@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { FiEdit3, FiSave, FiLogOut, FiUser, FiKey } from 'react-icons/fi';
+
 
 const Profile = () => {
     const [userData, setUserData] = useState({ username: '', email: '' });
@@ -38,6 +40,10 @@ const Profile = () => {
         }
     };
 
+    const handlePasswordReset = () => {
+        navigate('/reset-password');
+    };
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -66,73 +72,83 @@ const Profile = () => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
-            <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-96">
-                <div className="flex flex-col items-center mb-6">
-                    <div className="bg-gray-700 p-4 rounded-full mb-4">
-                        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A9.003 9.003 0 0112 15c2.21 0 4.21.896 5.879 2.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </div>
-                    <h2 className="text-2xl font-semibold">{userData.username}</h2>
-                    <p className="text-gray-400">{userData.email}</p>
-                </div>
-                <div className="mb-4">
-                    <label className="block text-gray-400">Username</label>
+
+        <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col items-center p-10">
+            <FiUser className="text-6xl mb-4" />
+            <h2 className="text-2xl font-semibold">{userData.username}</h2>
+            <p className="text-md text-gray-400 mb-4">{userData.email}</p>
+            
+            {/* Edit Button */}
+            <button
+                onClick={handleEditToggle}
+                className={`px-3 py-2 rounded-lg text-white font-medium transition ${
+                    editing ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
+                } mb-4`}
+            >
+                {editing ? "Cancel" : "Edit Profile"} <FiEdit3 className="inline ml-2" />
+            </button>
+
+            {/* Profile Details */}
+            <div className="w-full max-w-md">
+                {/* Username */}
+                <div className="mb-6">
+                    <label className="block text-lg font-medium text-gray-300">Username</label>
                     {editing ? (
                         <input
                             type="text"
                             name="username"
                             value={formData.username}
                             onChange={handleChange}
-                            className="w-full p-2 mt-2 bg-gray-700 rounded"
+                            className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg focus:ring-blue-500 text-white"
                         />
                     ) : (
-                        <p className="p-2 bg-gray-700 rounded">{userData.username}</p>
+                        <p className="px-4 py-3 bg-gray-800 rounded-lg text-gray-300">{userData.username}</p>
                     )}
                 </div>
-                <div className="mb-4">
-                    <label className="block text-gray-400">Email</label>
+
+                {/* Email */}
+                <div className="mb-6">
+                    <label className="block text-lg font-medium text-gray-300">Email</label>
                     {editing ? (
                         <input
                             type="email"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className="w-full p-2 mt-2 bg-gray-700 rounded"
+                            className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg focus:ring-blue-500 text-white"
                         />
                     ) : (
-                        <p className="p-2 bg-gray-700 rounded">{userData.email}</p>
+                        <p className="px-4 py-3 bg-gray-800 rounded-lg text-gray-300">{userData.email}</p>
                     )}
                 </div>
-                <div className="flex space-x-4">
+                <div className='flex flex-1 justify-center gap-2'>
+                {/* Save Changes Button */}
+                {editing && (
                     <button
-                        onClick={handleEditToggle}
-                        className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white rounded"
+                        onClick={handleSaveChanges}
+                        className=" px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium "
                     >
-                        {editing ? "Cancel" : "Edit"}
+                        Save Changes <FiSave className="inline ml-2" />
                     </button>
-                    {editing && (
-                        <button
-                            onClick={handleSaveChanges}
-                            className="px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded"
-                        >
-                            Save Changes
-                        </button>
-                    )}
+                )}
+                {/* Password Reset Button */}
+                <button
+                    onClick={handlePasswordReset}
+                    className=" px-4 py-3 bg-blue-600 hover:bg-blue-800 text-white rounded-lg font-medium mb-"
+                >
+                    Reset Password <FiKey className="inline ml-2" />
+                </button>
+                  
+            {/* Logout Button */}
+            <button
+                onClick={handleLogout}
+                className=" px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
+            >
+                Logout <FiLogOut className="inline ml-2" />
+            </button>
                 </div>
-                <button
-                    onClick={() => navigate('/reset-password')}
-                    className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-700 text-white rounded w-full"
-                >
-                    Reset Password
-                </button>
-                <button
-                    onClick={handleLogout}
-                    className="mt-4 px-4 py-2 bg-red-500 hover:bg-red-700 text-white rounded w-full"
-                >
-                    Logout
-                </button>
+
+                
             </div>
 
         </div>
