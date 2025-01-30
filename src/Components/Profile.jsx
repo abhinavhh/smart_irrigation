@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { FiEdit3, FiSave, FiLogOut, FiUser, FiKey } from 'react-icons/fi';
+
 
 const Profile = () => {
     const [userData, setUserData] = useState({ username: '', email: '' });
@@ -38,6 +40,10 @@ const Profile = () => {
         }
     };
 
+    const handlePasswordReset = () => {
+        navigate('/reset-password');
+    };
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -66,38 +72,84 @@ const Profile = () => {
     };
 
     return (
-        <div>
-            <h2>User Profile</h2>
-            <p>
-                <strong>Username:</strong>{" "}
-                {editing ? (
-                    <input
-                        type="text"
-                        name="username"
-                        value={formData.username}
-                        onChange={handleChange}
-                    />
-                ) : (
-                    userData.username
+        <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col items-center p-10">
+            <FiUser className="text-6xl mb-4" />
+            <h2 className="text-2xl font-semibold">{userData.username}</h2>
+            <p className="text-md text-gray-400 mb-4">{userData.email}</p>
+            
+            {/* Edit Button */}
+            <button
+                onClick={handleEditToggle}
+                className={`px-3 py-2 rounded-lg text-white font-medium transition ${
+                    editing ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
+                } mb-4`}
+            >
+                {editing ? "Cancel" : "Edit Profile"} <FiEdit3 className="inline ml-2" />
+            </button>
+
+            {/* Profile Details */}
+            <div className="w-full max-w-md">
+                {/* Username */}
+                <div className="mb-6">
+                    <label className="block text-lg font-medium text-gray-300">Username</label>
+                    {editing ? (
+                        <input
+                            type="text"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg focus:ring-blue-500 text-white"
+                        />
+                    ) : (
+                        <p className="px-4 py-3 bg-gray-800 rounded-lg text-gray-300">{userData.username}</p>
+                    )}
+                </div>
+
+                {/* Email */}
+                <div className="mb-6">
+                    <label className="block text-lg font-medium text-gray-300">Email</label>
+                    {editing ? (
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg focus:ring-blue-500 text-white"
+                        />
+                    ) : (
+                        <p className="px-4 py-3 bg-gray-800 rounded-lg text-gray-300">{userData.email}</p>
+                    )}
+                </div>
+                <div className='flex flex-1 justify-center gap-2'>
+                {/* Save Changes Button */}
+                {editing && (
+                    <button
+                        onClick={handleSaveChanges}
+                        className=" px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium "
+                    >
+                        Save Changes <FiSave className="inline ml-2" />
+                    </button>
                 )}
-            </p>
-            <p>
-                <strong>Email:</strong>{" "}
-                {editing ? (
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                    />
-                ) : (
-                    userData.email
-                )}
-            </p>
-            <button onClick={handleEditToggle}>{editing ? "Cancel" : "Edit"}</button>
-            {editing && <button onClick={handleSaveChanges}>Save Changes</button>}
-            <button onClick={() => navigate('/reset-password')}>Reset Password</button>
-            <button onClick={handleLogout} style={{ marginTop: "10px" }}>Logout</button>
+                {/* Password Reset Button */}
+                <button
+                    onClick={handlePasswordReset}
+                    className=" px-4 py-3 bg-blue-600 hover:bg-blue-800 text-white rounded-lg font-medium mb-"
+                >
+                    Reset Password <FiKey className="inline ml-2" />
+                </button>
+                  
+            {/* Logout Button */}
+            <button
+                onClick={handleLogout}
+                className=" px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
+            >
+                Logout <FiLogOut className="inline ml-2" />
+            </button>
+                </div>
+
+                
+            </div>
+          
         </div>
     );
 };
