@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   LineChart,
@@ -11,71 +11,40 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import dayjs from "dayjs";
+import axios from "axios";
 
 const Graph = () => {
-  const { sensorType } = useParams(); // Sensor type from the route
-  const [rawData, setRawData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
+  const { sensorType } = useParams();
+  const [graphData, setGraphData] = useState([]);
   const [timeRange, setTimeRange] = useState("day");
   const navigate = useNavigate();
 
-  // Function to fetch data from the database
-  const fetchData = async (sensorType, timeRange) => {
-    const startDate = dayjs().subtract(timeRange === "week" ? 7 : timeRange === "month" ? 30 : 1, "day").toISOString();
-    try {
-      const response = await fetch(`/api/sensor-data/${sensorType}?startDate=${startDate}`);
-      const data = await response.json();
-
-      setRawData(data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  // Fetch data whenever the sensor type or time range changes
+  // Fetch data based on the time range
   useEffect(() => {
-    fetchData(sensorType, timeRange);
-  }, [sensorType, timeRange]);
+    let intervalId;
 
-  // Aggregate the data for week and month
-  useEffect(() => {
-    const aggregateData = () => {
-      let aggregatedData = [];
-      if (timeRange === "day") {
-        aggregatedData = rawData.map((data) => ({
-          timestamp: data.timestamp,
-          value: data.value,
-        }));
-      } else if (timeRange === "week") {
-        // Group by day and calculate average for each day
-        let dailyData = {};
-        rawData.forEach((data) => {
-          const day = dayjs(data.timestamp).format("YYYY-MM-DD");
-          if (!dailyData[day]) dailyData[day] = [];
-          dailyData[day].push(data.value);
-        });
-
-        aggregatedData = Object.keys(dailyData).map((day) => {
-          const avgValue = dailyData[day].reduce((sum, value) => sum + value, 0) / dailyData[day].length;
-          return { timestamp: day, value: avgValue };
-        });
-      } else if (timeRange === "month") {
-        // Group by 3 days and calculate average for each 3-day period
-        let threeDayData = [];
-        for (let i = 0; i < rawData.length; i += 3) {
-          const group = rawData.slice(i, i + 3);
-          const avgValue = group.reduce((sum, data) => sum + data.value, 0) / group.length;
-          const startDate = dayjs(group[0].timestamp).format("YYYY-MM-DD");
-          threeDayData.push({ timestamp: startDate, value: avgValue });
-        }
-        aggregatedData = threeDayData;
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/sensor/${sensorType}?filter=${timeRange}`
+        );
+        setGraphData(response.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
-
-      setFilteredData(aggregatedData);
     };
 
-    aggregateData();
-  }, [rawData, timeRange]);
+    if (timeRange === "day") {
+      // Fetch data every 10 minutes for day range
+      fetchData();
+      intervalId = setInterval(fetchData, 100); // 10 minutes interval
+    } else {
+      // Fetch data once for week and month ranges
+      fetchData();
+    }
+
+    return () => clearInterval(intervalId);
+  }, [sensorType, timeRange]);
 
   // Format X-axis labels based on the selected time range
   const formatXAxis = (timestamp) => {
@@ -128,7 +97,7 @@ const Graph = () => {
       {/* Graph */}
       <div className="bg-white p-4 rounded shadow-md">
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={filteredData}>
+          <LineChart data={graphData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="timestamp"
