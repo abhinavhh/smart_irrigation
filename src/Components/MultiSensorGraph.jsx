@@ -2,12 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import dayjs from 'dayjs';
+import axios from 'axios';
 
 const MultiSensorGraph = () => {
   const [rawData, setRawData] = useState([]);
   const [displayData, setDisplayData] = useState([]);
   const [filter, setFilter] = useState('day');
   const navigate = useNavigate();
+
+  // Fetch sensor data from the backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/sensors/all");
+        setRawData(response.data); // Set the raw data from the backend
+      } catch (error) {
+        console.error("Error fetching sensor data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Filter data based on time range
   useEffect(() => {
@@ -46,31 +61,10 @@ const MultiSensorGraph = () => {
       setDisplayData(Object.values(groupedData));
     };
 
-    filterData();
-  }, [filter, rawData]);
-
-  // WebSocket connection
-  useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8080/ws/sensor-data");
-
-    socket.onmessage = (event) => {
-      try {
-        const receivedData = JSON.parse(event.data);
-        setRawData(prevData => {
-          const newData = [...prevData, receivedData];
-          return newData.slice(-1000); // Keep last 1000 data points
-        });
-      } catch (error) {
-        console.error("Error parsing WebSocket data:", error);
-      }
-    };
-
-    socket.onerror = (error) => {
-      console.error("WebSocket Error:", error);
-    };
-
-    return () => socket.close();
-  }, []);
+    if (rawData.length > 0) {
+      filterData(); // Filter data when rawData is available
+    }
+  }, [filter, rawData]); // Re-filter when filter or rawData changes
 
   const formatXAxis = (timestamp) => {
     const date = dayjs(timestamp);
