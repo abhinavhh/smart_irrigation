@@ -16,19 +16,35 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Form submitted"); // Debug log
+    
     try {
+      if (!formData.username || !formData.password) {
+        setError("Please fill in all fields");
+        return;
+      }
+
+      console.log("Making API call..."); // Debug log
       const response = await axiosInstance.post("/auth/login", formData);
-      localStorage.setItem("username", formData.username);
-      localStorage.setItem("userId", response.data.userId);
-      alert(response.data.message);
-      navigate("/home");
-    } catch (error) {
-      setError("Invalid username or password",error);
+      console.log("API Response:", response); // Debug log
+
+      if (response.data) {
+        localStorage.setItem("username", formData.username);
+        localStorage.setItem("userId", response.data.userId);
+        navigate("/home");
+      }
+    } catch (err) {
+      console.error("Login error:", err); // Debug log
+      setError(err.response?.data?.message || "Login failed - please try again");
     }
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   return (
@@ -36,6 +52,7 @@ function Login() {
       <div className="w-full max-w-sm bg-gray-800 p-8 shadow-lg rounded-xl border border-gray-700">
         <h1 className="text-2xl font-bold mb-6 text-center text-white">USER LOGIN</h1>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-400">
@@ -56,6 +73,7 @@ function Login() {
               />
             </div>
           </div>
+
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-400">
               Password
@@ -75,18 +93,21 @@ function Login() {
               />
             </div>
           </div>
+
           <div className="flex items-center justify-between">
             <label className="flex items-center text-sm text-gray-400">
               <input type="checkbox" className="form-checkbox text-green-500" />
               <span className="ml-2">Remember me</span>
             </label>
             <button
+              type="button"
               onClick={() => navigate("/reset-password")}
               className="text-sm text-green-400 hover:underline"
             >
               Forgot password?
             </button>
           </div>
+
           <button
             type="submit"
             className="w-full py-2 px-4 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
@@ -94,11 +115,16 @@ function Login() {
             LOGIN
           </button>
         </form>
+
         <p className="text-sm text-center mt-4 text-gray-400">
-          Don&apos;t have an account? {" "}
-          <a href="/register" className="text-green-400 hover:underline">
+          Don&apos;t have an account?{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/register")}
+            className="text-green-400 hover:underline"
+          >
             Register here
-          </a>
+          </button>
         </p>
       </div>
     </div>
