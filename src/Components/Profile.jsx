@@ -17,7 +17,7 @@ const Profile = () => {
             navigate('/login');
         }
         console.log("Username being sent to backend:", username);
-        axiosInstance.get(`/user/${username}`)
+        axiosInstance.get(`/${username}`)
             .then(response => {
                 setUserData(response.data);
                 setFormData(response.data);
