@@ -38,7 +38,7 @@ const Home = () => {
     let intervalId;
 
     const openSocket = () => {
-        socket = new WebSocket("wss://6420-103-182-166-218.ngrok-free.app/ws/sensor-data");
+        socket = new WebSocket("wss://698c-103-182-166-218.ngrok-free.app/ws/sensor-data");
 
         socket.onopen = () => {
             console.log("WebSocket connected!");
