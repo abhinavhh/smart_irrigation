@@ -24,7 +24,7 @@ const Profile = () => {
             setIsLoading(true);
             try {
                 console.log("Fetching data for username:", username); // Log 1
-                const response = await axiosInstance.get(`/user/${username}`);
+                const response = await axiosInstance.get(`user/${username}`);
                 console.log("Response data:", response.data); // Log 2
                 setUserData(response.data);
                 setFormData(response.data);
@@ -77,7 +77,7 @@ const Profile = () => {
     
         try {
             const currentUsername = userData.username;
-            const response = await axiosInstance.put(`/user/update?currentUsername=${currentUsername}`, {
+            const response = await axiosInstance.put(`user/update?currentUsername=${currentUsername}`, {
                 username: formData.username.trim(),
                 email: formData.email.trim(),
             });
