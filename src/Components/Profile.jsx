@@ -11,26 +11,36 @@ const Profile = () => {
     const navigate = useNavigate();
     const username = localStorage.getItem('username');
 
-    useEffect(() => {
-        if (!username) {
-            alert("user not found");
+    const [isLoading, setIsLoading] = useState(true);
+
+useEffect(() => {
+    if (!username) {
+        alert("User not found");
+        navigate('/login');
+        return;
+    }
+
+    const fetchUserData = async () => {
+        setIsLoading(true);
+        try {
+            const response = await axiosInstance.get(`user/${username}`);
+            setUserData(response.data);
+            setFormData(response.data);
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || 
+                               error.response?.data || 
+                               error.message || 
+                               "An unknown error occurred";
+            
+            alert(`Failed to fetch user data: ${errorMessage}`);
             navigate('/login');
+        } finally {
+            setIsLoading(false);
         }
-        console.log("Username being sent to backend:", username);
-        axiosInstance.get(`/${username}`)
-            .then(response => {
-                setUserData(response.data);
-                setFormData(response.data);
-            })
-            .catch(error => {
-                if (error.response) {
-                    alert("Failed to fetch user data: " + error.response.data);
-                } else {
-                    alert("Error: " + error.message);
-                }
-                navigate('/login');
-            });
-    }, [username, navigate]);
+    };
+
+    fetchUserData();
+}, [username, navigate]);
 
     const handleEditToggle = () => {
         setEditing(!editing);
