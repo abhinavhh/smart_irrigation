@@ -13,34 +13,37 @@ const Profile = () => {
 
     const [isLoading, setIsLoading] = useState(true);
 
-useEffect(() => {
-    if (!username) {
-        alert("User not found");
-        navigate('/login');
-        return;
-    }
-
-    const fetchUserData = async () => {
-        setIsLoading(true);
-        try {
-            const response = await axiosInstance.get(`/user/${username}`);
-            setUserData(response.data);
-            setFormData(response.data);
-        } catch (error) {
-            const errorMessage = error.response?.data?.message || 
-                               error.response?.data || 
-                               error.message || 
-                               "An unknown error occurred";
-            
-            alert(`Failed to fetch user data: ${errorMessage}`);
+    useEffect(() => {
+        if (!username) {
+            alert("User not found");
             navigate('/login');
-        } finally {
-            setIsLoading(false);
+            return;
         }
-    };
 
-    fetchUserData();
-}, [username, navigate]);
+        const fetchUserData = async () => {
+            setIsLoading(true);
+            try {
+                console.log("Fetching data for username:", username); // Log 1
+                const response = await axiosInstance.get(`/user/${username}`);
+                console.log("Response data:", response.data); // Log 2
+                setUserData(response.data);
+                setFormData(response.data);
+            } catch (error) {
+                console.error("Error details:", error); // Log 3
+                const errorMessage = error.response?.data?.message || 
+                                error.response?.data || 
+                                error.message || 
+                                "An unknown error occurred";
+                
+                alert(`Failed to fetch user data: ${errorMessage}`);
+                navigate('/login');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [username, navigate]);
 
     const handleEditToggle = () => {
         setEditing(!editing);
