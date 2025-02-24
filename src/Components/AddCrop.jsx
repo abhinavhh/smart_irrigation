@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
-import { FiList, FiThermometer, FiDroplet, FiCloud } from 'react-icons/fi';
+import { FiList, FiThermometer, FiDroplet, FiCloud, FiEdit3 } from 'react-icons/fi';
 
 const SelectCrop = () => {
     const [crops, setCrops] = useState([]);
     const [selectedCrop, setSelectedCrop] = useState(null);
+    const [editedCrop, setEditedCrop] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -25,13 +27,28 @@ const SelectCrop = () => {
         fetchCrops();
     }, []);
 
-    const handleCropSelect = async (cropId) => {
-        try {
-            const response = await axiosInstance.get(`/crops/${cropId}`);
-            setSelectedCrop(response.data);
-        } catch (err) {
-            setError('Failed to fetch crop details');
-        }
+    const handleCropSelect = (crop) => {
+        setSelectedCrop(crop);
+        setEditedCrop(crop);
+        setIsEditing(false);
+    };
+
+    const handleEditToggle = () => {
+        setIsEditing(!isEditing);
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditedCrop({
+            ...editedCrop,
+            [name]: Number(value)
+        });
+    };
+
+    const handleUseThisCrop = () => {
+        // Save the selected crop (with any edits) to localStorage for use elsewhere in the app
+        localStorage.setItem('selectedCrop', JSON.stringify(editedCrop));
+        navigate('/home');
     };
 
     if (loading) {
@@ -70,7 +87,7 @@ const SelectCrop = () => {
                             {crops.map((crop) => (
                                 <button
                                     key={crop.id}
-                                    onClick={() => handleCropSelect(crop.id)}
+                                    onClick={() => handleCropSelect(crop)}
                                     className={`w-full py-3 px-4 text-left rounded-lg transition-colors ${
                                         selectedCrop && selectedCrop.id === crop.id
                                             ? 'bg-green-600 text-white'
@@ -87,71 +104,173 @@ const SelectCrop = () => {
                     <div className="bg-gray-700 p-4 rounded-xl">
                         {selectedCrop ? (
                             <div>
-                                <h3 className="text-2xl font-semibold mb-4 text-green-300">{selectedCrop.name}</h3>
-                                
-                                {/* Temperature Range */}
-                                <div className="mb-4">
-                                    <div className="flex items-center text-lg font-medium text-gray-300">
-                                        <FiThermometer className="mr-2 text-gray-400" />
-                                        Temperature Range
-                                    </div>
-                                    <div className="mt-1 p-3 bg-gray-800 rounded-lg grid grid-cols-2 gap-4">
-                                        <div>
-                                            <p className="text-sm text-gray-400">Minimum</p>
-                                            <p className="text-xl font-bold">{selectedCrop.minTemperature}°C</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-400">Maximum</p>
-                                            <p className="text-xl font-bold">{selectedCrop.maxTemperature}°C</p>
-                                        </div>
-                                    </div>
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-2xl font-semibold text-green-300">{selectedCrop.name}</h3>
+                                    <button 
+                                        onClick={handleEditToggle}
+                                        className="flex items-center px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded-lg text-sm"
+                                    >
+                                        <FiEdit3 className="mr-1" /> 
+                                        {isEditing ? 'View Only' : 'Edit Values'}
+                                    </button>
                                 </div>
                                 
-                                {/* Soil Moisture Range */}
-                                <div className="mb-4">
-                                    <div className="flex items-center text-lg font-medium text-gray-300">
-                                        <FiDroplet className="mr-2 text-gray-400" />
-                                        Soil Moisture Range
-                                    </div>
-                                    <div className="mt-1 p-3 bg-gray-800 rounded-lg grid grid-cols-2 gap-4">
+                                {isEditing ? (
+                                    /* Editable Form */
+                                    <form className="space-y-4">
+                                        {/* Temperature */}
                                         <div>
-                                            <p className="text-sm text-gray-400">Minimum</p>
-                                            <p className="text-xl font-bold">{selectedCrop.minSoilMoisture}%</p>
+                                            <div className="flex items-center text-lg font-medium text-gray-300 mb-2">
+                                                <FiThermometer className="mr-2 text-gray-400" />
+                                                Temperature Range (°C)
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm text-gray-400 mb-1">Minimum</label>
+                                                    <input
+                                                        type="number"
+                                                        name="minTemperature"
+                                                        value={editedCrop.minTemperature}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm text-gray-400 mb-1">Maximum</label>
+                                                    <input
+                                                        type="number"
+                                                        name="maxTemperature"
+                                                        value={editedCrop.maxTemperature}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
+                                        
+                                        {/* Soil Moisture */}
                                         <div>
-                                            <p className="text-sm text-gray-400">Maximum</p>
-                                            <p className="text-xl font-bold">{selectedCrop.maxSoilMoisture}%</p>
+                                            <div className="flex items-center text-lg font-medium text-gray-300 mb-2">
+                                                <FiDroplet className="mr-2 text-gray-400" />
+                                                Soil Moisture Range (%)
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm text-gray-400 mb-1">Minimum</label>
+                                                    <input
+                                                        type="number"
+                                                        name="minSoilMoisture"
+                                                        value={editedCrop.minSoilMoisture}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm text-gray-400 mb-1">Maximum</label>
+                                                    <input
+                                                        type="number"
+                                                        name="maxSoilMoisture"
+                                                        value={editedCrop.maxSoilMoisture}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Humidity */}
+                                        <div>
+                                            <div className="flex items-center text-lg font-medium text-gray-300 mb-2">
+                                                <FiCloud className="mr-2 text-gray-400" />
+                                                Humidity Range (%)
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm text-gray-400 mb-1">Minimum</label>
+                                                    <input
+                                                        type="number"
+                                                        name="minHumidity"
+                                                        value={editedCrop.minHumidity}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm text-gray-400 mb-1">Maximum</label>
+                                                    <input
+                                                        type="number"
+                                                        name="maxHumidity"
+                                                        value={editedCrop.maxHumidity}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                ) : (
+                                    /* Display-only View */
+                                    <div className="space-y-4">
+                                        {/* Temperature Range */}
+                                        <div className="mb-4">
+                                            <div className="flex items-center text-lg font-medium text-gray-300">
+                                                <FiThermometer className="mr-2 text-gray-400" />
+                                                Temperature Range
+                                            </div>
+                                            <div className="mt-1 p-3 bg-gray-800 rounded-lg grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p className="text-sm text-gray-400">Minimum</p>
+                                                    <p className="text-xl font-bold">{editedCrop.minTemperature}°C</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-gray-400">Maximum</p>
+                                                    <p className="text-xl font-bold">{editedCrop.maxTemperature}°C</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Soil Moisture Range */}
+                                        <div className="mb-4">
+                                            <div className="flex items-center text-lg font-medium text-gray-300">
+                                                <FiDroplet className="mr-2 text-gray-400" />
+                                                Soil Moisture Range
+                                            </div>
+                                            <div className="mt-1 p-3 bg-gray-800 rounded-lg grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p className="text-sm text-gray-400">Minimum</p>
+                                                    <p className="text-xl font-bold">{editedCrop.minSoilMoisture}%</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-gray-400">Maximum</p>
+                                                    <p className="text-xl font-bold">{editedCrop.maxSoilMoisture}%</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Humidity Range */}
+                                        <div className="mb-4">
+                                            <div className="flex items-center text-lg font-medium text-gray-300">
+                                                <FiCloud className="mr-2 text-gray-400" />
+                                                Humidity Range
+                                            </div>
+                                            <div className="mt-1 p-3 bg-gray-800 rounded-lg grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p className="text-sm text-gray-400">Minimum</p>
+                                                    <p className="text-xl font-bold">{editedCrop.minHumidity}%</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-gray-400">Maximum</p>
+                                                    <p className="text-xl font-bold">{editedCrop.maxHumidity}%</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                {/* Humidity Range */}
-                                <div className="mb-4">
-                                    <div className="flex items-center text-lg font-medium text-gray-300">
-                                        <FiCloud className="mr-2 text-gray-400" />
-                                        Humidity Range
-                                    </div>
-                                    <div className="mt-1 p-3 bg-gray-800 rounded-lg grid grid-cols-2 gap-4">
-                                        <div>
-                                            <p className="text-sm text-gray-400">Minimum</p>
-                                            <p className="text-xl font-bold">{selectedCrop.minHumidity}%</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-400">Maximum</p>
-                                            <p className="text-xl font-bold">{selectedCrop.maxHumidity}%</p>
-                                        </div>
-                                    </div>
-                                </div>
+                                )}
                                 
                                 {/* Use This Crop Button */}
                                 <button
                                     className="w-full mt-4 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium"
-                                    onClick={() => {
-                                        // Here you can add logic to use the selected crop
-                                        // For example, saving to local storage or redux store
-                                        localStorage.setItem('selectedCrop', JSON.stringify(selectedCrop));
-                                        navigate('/home');
-                                    }}
+                                    onClick={handleUseThisCrop}
                                 >
                                     Use This Crop
                                 </button>
