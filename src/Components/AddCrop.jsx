@@ -13,24 +13,79 @@ const SelectCrop = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchCrops = async () => {
+        const fetchCropsAndSetup = async () => {
             try {
+                // Get the saved crop first to prioritize user edits
+                const savedCropJSON = localStorage.getItem('selectedCrop');
+                let savedCrop = savedCropJSON ? JSON.parse(savedCropJSON) : null;
+                
+                // Fetch all crops from the database
                 const response = await axiosInstance.get('/crops/all');
-                setCrops(response.data);
+                
+                // Create a map to store user-edited crops by their ID
+                let editedCropsMap = {};
+                
+                // Check if we have any edited crops stored
+                const editedCropsJSON = localStorage.getItem('editedCrops');
+                if (editedCropsJSON) {
+                    editedCropsMap = JSON.parse(editedCropsJSON);
+                }
+                
+                // Apply any edited values to the fetched crops
+                const updatedCrops = response.data.map(crop => {
+                    if (editedCropsMap[crop.id]) {
+                        // Merge the database crop with the user edits
+                        return { ...crop, ...editedCropsMap[crop.id] };
+                    }
+                    return crop;
+                });
+                
+                setCrops(updatedCrops);
+                
+                // If we have a saved selection, set it as the selected crop
+                if (savedCrop) {
+                    // Find the crop in the updated list
+                    const matchingCrop = updatedCrops.find(crop => crop.id === savedCrop.id);
+                    
+                    if (matchingCrop) {
+                        setSelectedCrop(matchingCrop);
+                        setEditedCrop(matchingCrop);
+                    } else {
+                        // If the crop was not found in the database (rare case), use the saved version
+                        setSelectedCrop(savedCrop);
+                        setEditedCrop(savedCrop);
+                    }
+                }
+                
                 setLoading(false);
             } catch (err) {
+                console.error("Error fetching crops:", err);
                 setError('Failed to fetch crops data');
                 setLoading(false);
             }
         };
 
-        fetchCrops();
+        fetchCropsAndSetup();
     }, []);
 
     const handleCropSelect = (crop) => {
-        setSelectedCrop(crop);
-        setEditedCrop(crop);
+        // Check if there are saved irrigation times for this crop
+        const irrigationTimesJSON = localStorage.getItem('irrigationTimes');
+        const irrigationTimes = irrigationTimesJSON ? JSON.parse(irrigationTimesJSON) : {};
+        
+        // Load the saved irrigation times for this crop
+        const cropWithTimes = {
+            ...crop,
+            startTime: irrigationTimes[crop.id]?.startTime || '',
+            endTime: irrigationTimes[crop.id]?.endTime || '',
+        };
+        
+        setSelectedCrop(cropWithTimes);
+        setEditedCrop(cropWithTimes);
         setIsEditing(false);
+        
+        // Save the selected crop to localStorage
+        localStorage.setItem('selectedCrop', JSON.stringify(cropWithTimes));
     };
 
     const handleEditToggle = () => {
@@ -39,10 +94,33 @@ const SelectCrop = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setEditedCrop({
+        const updatedCrop = {
             ...editedCrop,
             [name]: Number(value)
-        });
+        };
+        
+        setEditedCrop(updatedCrop);
+        
+        // Update the selected crop in localStorage
+        localStorage.setItem('selectedCrop', JSON.stringify(updatedCrop));
+        
+        // Also save to edited crops map to ensure persistence
+        const editedCropsJSON = localStorage.getItem('editedCrops');
+        let editedCrops = editedCropsJSON ? JSON.parse(editedCropsJSON) : {};
+        
+        // Save only the edited fields for this crop
+        editedCrops[updatedCrop.id] = {
+            ...editedCrops[updatedCrop.id],
+            [name]: Number(value)
+        };
+        
+        localStorage.setItem('editedCrops', JSON.stringify(editedCrops));
+        
+        // Update the crop in the crops array to ensure consistency
+        const updatedCrops = crops.map(c => 
+            c.id === updatedCrop.id ? updatedCrop : c
+        );
+        setCrops(updatedCrops);
     };
 
     const handleUseThisCrop = () => {

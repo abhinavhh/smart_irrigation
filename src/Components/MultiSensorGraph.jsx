@@ -85,41 +85,60 @@ const MultiSensorGraph = () => {
     return `${value}${unit}`;
   };
 
+  const getTimeRangeTitle = () => {
+    switch (filter) {
+      case 'day':
+        return 'Last 24 Hours (Real-time Values)';
+      case 'week':
+        return 'Last 7 Days (Daily Averages)';
+      case 'month':
+        return 'Last 4 Weeks (Weekly Averages)';
+      default:
+        return 'Sensor Data';
+    }
+  };
+
   return (
-    <div className="p-4">
-      <div className="mb-4 flex justify-between items-center">
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
         <button 
           onClick={() => navigate('/home')} 
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600 transition-all"
         >
           Back to Home
         </button>
 
-        <div className="flex items-center gap-2">
-          <label className="font-medium">Show Last: </label>
-          <select 
+        <div className="flex items-center gap-4">
+          <label htmlFor="time-range" className="font-medium text-gray-800">
+            Time Range:
+          </label>
+          <select
+            id="time-range"
             value={filter} 
             onChange={(e) => setFilter(e.target.value)}
             className="p-2 border rounded"
           >
-            <option value="day">24 Hours</option>
-            <option value="week">7 Days</option>
-            <option value="month">30 Days</option>
+            <option value="day">Last 24 Hours</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 4 Weeks</option>
           </select>
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold mb-4">Real-Time Sensor Readings</h2>
+      <h2 className="text-2xl font-bold mb-4 text-gray-700">
+        Real-Time Sensor Readings - {getTimeRangeTitle()}
+      </h2>
 
-      <div className="border rounded p-4 bg-white shadow">
+      <div className="bg-white p-4 rounded shadow-md">
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={displayData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="timestamp" 
               tickFormatter={formatXAxis}
+              stroke="#4B5563"
             />
-            <YAxis />
+            <YAxis stroke="#4B5563" />
             <Tooltip 
               labelFormatter={(timestamp) => dayjs(timestamp).format('YYYY-MM-DD HH:mm:ss')}
               formatter={formatTooltipValue}
@@ -150,23 +169,43 @@ const MultiSensorGraph = () => {
         </ResponsiveContainer>
       </div>
 
-      {/* Current Values Display */}
-      <div className="mt-4 grid grid-cols-3 gap-4">
-        {['Temperature', 'Humidity', 'SoilMoisture'].map(sensor => {
-          const latestData = displayData[displayData.length - 1];
-          const value = latestData ? latestData[sensor] : 'N/A';
-          const unit = sensor === 'Temperature' ? '°C' : '%';
-          
-          return (
-            <div key={sensor} className="p-4 border rounded bg-white shadow">
-              <h3 className="font-bold">{sensor}</h3>
-              <p className="text-2xl">
-                {value !== 'N/A' ? `${value}${unit}` : 'N/A'}
+      {/* Show message if no data available */}
+      {displayData.length === 0 && (
+        <div className="text-center mt-4 p-4 bg-yellow-100 rounded">
+          No data available for this time range.
+        </div>
+      )}
+
+      {/* Data summary section */}
+      {displayData.length > 0 && (
+        <div className="mt-6 bg-white p-4 rounded shadow-md">
+          <h3 className="text-lg font-semibold mb-3">Data Summary</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Data Points</p>
+              <p className="text-xl font-bold">{displayData.length}</p>
+            </div>
+            <div className="bg-blue-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Average Temperature</p>
+              <p className="text-xl font-bold">
+                {(displayData.reduce((sum, item) => sum + item.Temperature, 0) / displayData.length).toFixed(2)}°C
               </p>
             </div>
-          );
-        })}
-      </div>
+            <div className="bg-blue-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Average Humidity</p>
+              <p className="text-xl font-bold">
+                {(displayData.reduce((sum, item) => sum + item.Humidity, 0) / displayData.length).toFixed(2)}%
+              </p>
+            </div>
+            <div className="bg-blue-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Average Soil Moisture</p>
+              <p className="text-xl font-bold">
+                {(displayData.reduce((sum, item) => sum + item.SoilMoisture, 0) / displayData.length).toFixed(2)}%
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

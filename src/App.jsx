@@ -15,6 +15,7 @@ import Notification  from "./Components/Notifications";
 import MultiSensorGraph from "./Components/MultiSensorGraph";
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
+import { ToastContainer, Bounce } from 'react-toastify';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -51,7 +52,19 @@ function App() {
         <Route path="/profile" element={<Profile/>}/>
         <Route path="/multi-sensor-graph" element={<MultiSensorGraph/>}/>
       </Routes>
-    
+    <ToastContainer
+      position="bottom-left"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick={false}
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="dark"
+      transition={Bounce}
+    />
     </MantineProvider>
   );
 }
