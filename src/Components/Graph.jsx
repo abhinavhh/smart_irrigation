@@ -26,7 +26,7 @@ const Graph = () => {
         const response = await axios.get(
           `http://localhost:8080/api/sensor/${sensorType}?filter=${timeRange}`
         );
-        
+
         const newData = response.data;
 
         if (timeRange === "day") {
@@ -62,6 +62,23 @@ const Graph = () => {
         return date.format("HH:mm");
     }
   };
+
+  // Calculate Summary Data
+  const totalDataPoints = graphData.length;
+  const averageValue =
+    totalDataPoints > 0
+      ? (
+          graphData.reduce((sum, item) => sum + item.value, 0) / totalDataPoints
+        ).toFixed(2)
+      : "N/A";
+  const minValue =
+    totalDataPoints > 0
+      ? Math.min(...graphData.map((item) => item.value)).toFixed(2)
+      : "N/A";
+  const maxValue =
+    totalDataPoints > 0
+      ? Math.max(...graphData.map((item) => item.value)).toFixed(2)
+      : "N/A";
 
   return (
     <div className="p-6 bg-gray-900 min-h-screen text-gray-200">
@@ -110,13 +127,12 @@ const Graph = () => {
                 color: "#E5E7EB",
               }}
             />
-            {/* Blue Transparent Area Fill */}
             <Area
               type="monotone"
               dataKey="value"
               name={sensorType}
               stroke="#38BDF8"
-              fill="rgba(56, 189, 248, 0.4)" // Transparent blue fill
+              fill="rgba(56, 189, 248, 0.4)"
               strokeWidth={2}
               dot={{ stroke: "#38BDF8", strokeWidth: 2 }}
               activeDot={{ r: 6, fill: "#38BDF8" }}
@@ -129,6 +145,30 @@ const Graph = () => {
       {graphData.length === 0 && (
         <div className="text-center mt-4 p-4 bg-yellow-800 text-yellow-200 rounded">
           No data available for this sensor type and time range.
+        </div>
+      )}
+
+      {graphData.length > 0 && (
+        <div className="mt-6 bg-gray-800 p-4 rounded shadow-md">
+          <h3 className="text-lg font-semibold mb-3">Data Summary</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-gray-700 p-3 rounded">
+              <p className="text-sm text-gray-400">Data Points</p>
+              <p className="text-xl font-bold">{totalDataPoints}</p>
+            </div>
+            <div className="bg-gray-700 p-3 rounded">
+              <p className="text-sm text-gray-400">Average</p>
+              <p className="text-xl font-bold">{averageValue}</p>
+            </div>
+            <div className="bg-gray-700 p-3 rounded">
+              <p className="text-sm text-gray-400">Min Value</p>
+              <p className="text-xl font-bold">{minValue}</p>
+            </div>
+            <div className="bg-gray-700 p-3 rounded">
+              <p className="text-sm text-gray-400">Max Value</p>
+              <p className="text-xl font-bold">{maxValue}</p>
+            </div>
+          </div>
         </div>
       )}
     </div>
