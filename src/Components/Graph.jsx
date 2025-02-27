@@ -111,7 +111,7 @@ const Graph = () => {
       </h2>
 
       <div className="bg-gray-800 p-4 rounded shadow-md">
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={graphData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
             <XAxis

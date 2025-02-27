@@ -13,3 +13,16 @@ INSERT INTO sensor_data (sensor_type, value) VALUES
 ('SoilMoisture', 35.8),
 ('SoilMoisture', 45.3),
 ('SoilMoisture', 28.7);
+
+
+CREATE TABLE user_crop_edits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    crop_id INT,
+    field_name VARCHAR(255),
+    edited_value TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE(user_id, crop_id, field_name),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (crop_id) REFERENCES crops(id)
+);

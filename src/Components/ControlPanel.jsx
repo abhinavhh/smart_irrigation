@@ -6,9 +6,9 @@ import { toast, Bounce } from 'react-toastify';
 const ControlPanel = () => {
     const [selectedCrop, setSelectedCrop] = useState(null);
     const [sensorData, setSensorData] = useState({
-        soilMoisture: 'N/A',
-        temperature: 'N/A',
-        humidity: 'N/A',
+        SoilMoisture: 'N/A',
+        Temperature: 'N/A',
+        Humidity: 'N/A',
     });
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
@@ -23,11 +23,14 @@ const ControlPanel = () => {
         if (savedCropJSON) {
             const savedCrop = JSON.parse(savedCropJSON);
             setSelectedCrop(savedCrop);
-            setStartTime(savedCrop.startTime || '');
-            setEndTime(savedCrop.endTime || '');
             fetchCropDetails(savedCrop.id); // Fetch the latest crop details from the database
         } else {
-            alert('No crop selected. Please select a crop first.');
+            toast.warn('No crop selected. Please select a crop first.', {
+                position: "bottom-right",
+                autoClose: 3000,
+                theme: "dark",
+                transition: Bounce,
+            });
         }
     }, []);
 
@@ -35,60 +38,25 @@ const ControlPanel = () => {
     const fetchCropDetails = async (cropId) => {
         try {
             const response = await axiosInstance.get(`crops/${cropId}`);
-            setSelectedCrop(response.data); // Update the selected crop with the latest details
-            setStartTime(response.data.startTime || '');
-            setEndTime(response.data.endTime || '');
+            const cropData = response.data;
+            setSelectedCrop(cropData);
+            
+            // Set time values from received data
+            setStartTime(cropData.irrigationStartTime || '');
+            setEndTime(cropData.irrigationEndTime || '');
         } catch (error) {
             console.error('Error fetching crop details:', error);
-            alert('Failed to fetch crop details.');
+            toast.error('Failed to fetch crop details.', {
+                position: "bottom-right",
+                theme: "dark",
+                transition: Bounce,
+            });
         } finally {
             setLoading(false);
         }
     };
 
-    /** ✅ Real-Time WebSocket Sensor Data Handling */
-    useEffect(() => {
-        const socket = new WebSocket('ws://localhost:8080/ws/sensor-data');
-        socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            setSensorData(data);
-        };
-        return () => socket.close();
-    }, []);
-
-    /** ✅ Handle Manual Valve Control */
-    const toggleManualControl = async () => {
-        try {
-            await axiosInstance.post(`/irrigation/manual-control?openValve=${!manualControl}`);
-            setManualControl(!manualControl);
-        } catch (error) {
-            alert("Error controlling valve: " + error.message);
-        }
-    };
-
-    /** ✅ Trigger Automatic Irrigation Analysis */
-    const analyzeIrrigation = async () => {
-        try {
-            if (!selectedCrop) {
-                alert('No crop selected. Please select a crop first.');
-                return;
-            }
-
-            // Prepare the payload with cropId
-            const payload = {
-                cropId: selectedCrop.id,
-            };
-
-            // Send the irrigation analysis request to the backend
-            const response = await axiosInstance.post(`/irrigation/analyze/${selectedCrop.id}`, payload);
-
-            // Display success message
-            setIrrigationStatus(response.data.message || 'Analysis completed.');
-        } catch (error) {
-            alert('Error in irrigation analysis: ' + error.message);
-        }
-    };
-
+    /** ✅ WebSocket Sensor Data Handling */
     useEffect(() => {
         let socket;
         let intervalId;
@@ -133,7 +101,7 @@ const ControlPanel = () => {
     
         const requestData = () => {
           if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send("Request data"); // Send a request for new data
+            socket.send("Request data");
             console.log("Requesting sensor data...");
           }
         };
@@ -155,46 +123,119 @@ const ControlPanel = () => {
           clearInterval(intervalId);
           closeSocket();
         };
-      }, []);
+    }, []);
+
+    /** ✅ Handle Manual Valve Control */
+    const toggleManualControl = async () => {
+        try {
+            await axiosInstance.post(`/irrigation/manual-control?openValve=${!manualControl}`);
+            setManualControl(!manualControl);
+        } catch (error) {
+            toast.error("Error controlling valve: " + error.message, {
+                position: "bottom-right",
+                theme: "dark",
+                transition: Bounce,
+            });
+        }
+    };
+
+    /** ✅ Trigger Automatic Irrigation Analysis */
+    const analyzeIrrigation = async () => {
+        try {
+            if (!selectedCrop) {
+                toast.warn('No crop selected. Please select a crop first.', {
+                    position: "bottom-right",
+                    theme: "dark",
+                    transition: Bounce,
+                });
+                return;
+            }
+
+            // Prepare the payload with cropId
+            const payload = {
+                cropId: selectedCrop.id,
+            };
+
+            // Send the irrigation analysis request to the backend
+            const response = await axiosInstance.post(`/irrigation/analyze/${selectedCrop.id}`, payload);
+
+            // Display success message
+            setIrrigationStatus(response.data.message || 'Analysis completed.');
+        } catch (error) {
+            toast.error('Error in irrigation analysis: ' + error.message, {
+                position: "bottom-right",
+                theme: "dark",
+                transition: Bounce,
+            });
+        }
+    };
 
     /** ✅ Set Irrigation Time */
     const setIrrigationTime = async () => {
         try {
             if (!selectedCrop) {
-                alert('No crop selected. Please select a crop first.');
+                toast.warn('No crop selected. Please select a crop first.', {
+                    position: "bottom-right",
+                    theme: "dark",
+                    transition: Bounce,
+                });
+                return;
+            }
+
+            // Validate times
+            if (!startTime || !endTime) {
+                toast.warn('Both start and end times are required.', {
+                    position: "bottom-right",
+                    theme: "dark",
+                    transition: Bounce,
+                });
                 return;
             }
 
             // Send the irrigation time data to the backend
-            const response = await axiosInstance.put(`crops/${selectedCrop.id}/set-irrigation-time`, {
+            await axiosInstance.put(`crops/${selectedCrop.id}/set-irrigation-time`, {
                 startTime,
                 endTime,
             });
 
             // Update the selected crop with the new times
-            const updatedCrop = { ...selectedCrop, startTime, endTime };
+            const updatedCrop = { 
+                ...selectedCrop, 
+                irrigationStartTime: startTime, 
+                irrigationEndTime: endTime 
+            };
+            
             setSelectedCrop(updatedCrop);
             localStorage.setItem('selectedCrop', JSON.stringify(updatedCrop));
-
-            alert('Irrigation time set successfully.');
-        } catch (error) {
-            toast.warn('Error setting time', {
+            setIsEditingTime(false); // Exit editing mode
+            
+            toast.success('Irrigation time set successfully.', {
                 position: "bottom-right",
                 autoClose: 1500,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
                 theme: "dark",
                 transition: Bounce,
-                });
+            });
+        } catch (error) {
+            toast.error('Error setting time: ' + (error.response?.data || error.message), {
+                position: "bottom-right",
+                autoClose: 1500,
+                theme: "dark",
+                transition: Bounce,
+            });
         }
     };
 
     /** ✅ Toggle Edit Mode for Irrigation Time */
     const toggleEditMode = () => {
         setIsEditingTime(!isEditingTime);
+    };
+
+    /** ✅ Cancel Editing */
+    const cancelEditing = () => {
+        // Reset to original values
+        setStartTime(selectedCrop.irrigationStartTime || '');
+        setEndTime(selectedCrop.irrigationEndTime || '');
+        setIsEditingTime(false);
     };
 
     if (loading) {
@@ -238,90 +279,96 @@ const ControlPanel = () => {
                             </div>
                         </div>
 
-                        {/* ✅ Display Irrigation Time */}
-                        {selectedCrop.startTime && selectedCrop.endTime ? (
-                            <div className="mt-4 bg-gray-800 p-3 rounded-lg">
-                                <div className="flex justify-between items-center">
-                                    <h4 className="text-lg font-semibold text-gray-100 mb-2 flex items-center">
-                                        <FiClock className="mr-2" /> Irrigation Time
-                                    </h4>
+                        {/* ✅ Irrigation Time Display/Edit Section */}
+                        <div className="mt-4 bg-gray-800 p-3 rounded-lg">
+                            <div className="flex justify-between items-center">
+                                <h4 className="text-lg font-semibold text-gray-100 mb-2 flex items-center">
+                                    <FiClock className="mr-2" /> Irrigation Time
+                                </h4>
+                                {selectedCrop.irrigationStartTime && selectedCrop.irrigationEndTime && !isEditingTime && (
                                     <button
                                         onClick={toggleEditMode}
                                         className="flex items-center px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded-lg text-sm"
                                     >
-                                        <FiEdit3 className="mr-1" /> 
-                                        {isEditingTime ? 'Cancel' : 'Edit'}
+                                        <FiEdit3 className="mr-1" /> Edit
                                     </button>
-                                </div>
-                                {isEditingTime ? (
-                                    <div className="mt-4">
-                                        <div className="flex space-x-4">
-                                            <div>
-                                                <label className="block text-gray-100 font-semibold mb-2">Start Time:</label>
-                                                <input
-                                                    type="time"
-                                                    value={startTime}
-                                                    onChange={(e) => setStartTime(e.target.value)}
-                                                    className="px-4 py-2 border border-gray-950 rounded-lg text-black shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-gray-100 font-semibold mb-2">End Time:</label>
-                                                <input
-                                                    type="time"
-                                                    value={endTime}
-                                                    onChange={(e) => setEndTime(e.target.value)}
-                                                    className="px-4 py-2 border border-gray-950 text-black rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                                />
-                                            </div>
+                                )}
+                            </div>
+                            
+                            {isEditingTime ? (
+                                <div className="mt-4">
+                                    <div className="flex flex-wrap md:flex-nowrap space-y-4 md:space-y-0 md:space-x-4">
+                                        <div>
+                                            <label className="block text-gray-100 font-semibold mb-2">Start Time:</label>
+                                            <input
+                                                type="time"
+                                                value={startTime}
+                                                onChange={(e) => setStartTime(e.target.value)}
+                                                className="px-4 py-2 border border-gray-950 rounded-lg text-black shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                            />
                                         </div>
+                                        <div>
+                                            <label className="block text-gray-100 font-semibold mb-2">End Time:</label>
+                                            <input
+                                                type="time"
+                                                value={endTime}
+                                                onChange={(e) => setEndTime(e.target.value)}
+                                                className="px-4 py-2 border border-gray-950 text-black rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex space-x-3 mt-4">
                                         <button
                                             onClick={setIrrigationTime}
-                                            className="mt-4 px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transform transition-transform duration-300"
+                                            className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-600 transition-colors duration-300"
                                         >
                                             Save Changes
                                         </button>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <p className="text-gray-100">Start: <span className="font-semibold">{selectedCrop.startTime}</span></p>
-                                        <p className="text-gray-100">End: <span className="font-semibold">{selectedCrop.endTime}</span></p>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="mt-4 bg-gray-800 p-3 rounded-lg">
-                                <h4 className="text-lg font-semibold text-gray-100 mb-2 flex items-center">
-                                    <FiClock className="mr-2" /> Set Irrigation Time
-                                </h4>
-                                <div className="flex space-x-4">
-                                    <div>
-                                        <label className="block text-gray-100 font-semibold mb-2">Start Time:</label>
-                                        <input
-                                            type="time"
-                                            value={startTime}
-                                            onChange={(e) => setStartTime(e.target.value)}
-                                            className="px-4 py-2 border border-gray-950 rounded-lg text-black shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-gray-100 font-semibold mb-2">End Time:</label>
-                                        <input
-                                            type="time"
-                                            value={endTime}
-                                            onChange={(e) => setEndTime(e.target.value)}
-                                            className="px-4 py-2 border border-gray-950 text-black rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                        />
+                                        <button
+                                            onClick={cancelEditing}
+                                            className="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-lg hover:bg-gray-500 transition-colors duration-300"
+                                        >
+                                            Cancel
+                                        </button>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={setIrrigationTime}
-                                    className="mt-4 px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transform transition-transform duration-300"
-                                >
-                                    Set Timing
-                                </button>
-                            </div>
-                        )}
+                            ) : selectedCrop.irrigationStartTime && selectedCrop.irrigationEndTime ? (
+                                <div>
+                                    <p className="text-gray-100">Start: <span className="font-semibold">{selectedCrop.irrigationStartTime}</span></p>
+                                    <p className="text-gray-100">End: <span className="font-semibold">{selectedCrop.irrigationEndTime}</span></p>
+                                </div>
+                            ) : (
+                                <div className="mt-4">
+                                    <p className="text-yellow-400 mb-3">No irrigation times set for this crop.</p>
+                                    <div className="flex flex-wrap md:flex-nowrap space-y-4 md:space-y-0 md:space-x-4">
+                                        <div>
+                                            <label className="block text-gray-100 font-semibold mb-2">Start Time:</label>
+                                            <input
+                                                type="time"
+                                                value={startTime}
+                                                onChange={(e) => setStartTime(e.target.value)}
+                                                className="px-4 py-2 border border-gray-950 rounded-lg text-black shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-gray-100 font-semibold mb-2">End Time:</label>
+                                            <input
+                                                type="time"
+                                                value={endTime}
+                                                onChange={(e) => setEndTime(e.target.value)}
+                                                className="px-4 py-2 border border-gray-950 text-black rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                            />
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={setIrrigationTime}
+                                        className="mt-4 px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-600 transition-colors duration-300"
+                                    >
+                                        Set Timing
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 ) : (
                     <div className="bg-gray-700 p-5 rounded-lg text-center">
@@ -336,45 +383,45 @@ const ControlPanel = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Soil Moisture */}
                         <div className="bg-gray-800 p-3 rounded-lg flex flex-col items-center">
-                        <p className="text-gray-400 text-sm">Soil Moisture</p>
-                        <p className="text-2xl font-bold text-blue-400">{sensorData.SoilMoisture}%</p>
-                        {selectedCrop && (
-                            <p className="text-xs text-gray-400 mt-1">
-                            Target: {selectedCrop.minSoilMoisture}% - {selectedCrop.maxSoilMoisture}%
-                            </p>
-                        )}
+                            <p className="text-gray-400 text-sm">Soil Moisture</p>
+                            <p className="text-2xl font-bold text-blue-400">{sensorData.SoilMoisture}%</p>
+                            {selectedCrop && (
+                                <p className="text-xs text-gray-400 mt-1">
+                                Target: {selectedCrop.minSoilMoisture}% - {selectedCrop.maxSoilMoisture}%
+                                </p>
+                            )}
                         </div>
 
                         {/* Temperature */}
                         <div className="bg-gray-800 p-3 rounded-lg flex flex-col items-center">
-                        <p className="text-gray-400 text-sm">Temperature</p>
-                        <p className="text-2xl font-bold text-red-400">{sensorData.Temperature}°C</p>
-                        {selectedCrop && (
-                            <p className="text-xs text-gray-400 mt-1">
-                            Target: {selectedCrop.minTemperature}°C - {selectedCrop.maxTemperature}°C
-                            </p>
-                        )}
+                            <p className="text-gray-400 text-sm">Temperature</p>
+                            <p className="text-2xl font-bold text-red-400">{sensorData.Temperature}°C</p>
+                            {selectedCrop && (
+                                <p className="text-xs text-gray-400 mt-1">
+                                Target: {selectedCrop.minTemperature}°C - {selectedCrop.maxTemperature}°C
+                                </p>
+                            )}
                         </div>
 
                         {/* Humidity */}
                         <div className="bg-gray-800 p-3 rounded-lg flex flex-col items-center">
-                        <p className="text-gray-400 text-sm">Humidity</p>
-                        <p className="text-2xl font-bold text-green-400">{sensorData.Humidity}%</p>
-                        {selectedCrop && (
-                            <p className="text-xs text-gray-400 mt-1">
-                            Target: {selectedCrop.minHumidity}% - {selectedCrop.maxHumidity}%
-                            </p>
-                        )}
+                            <p className="text-gray-400 text-sm">Humidity</p>
+                            <p className="text-2xl font-bold text-green-400">{sensorData.Humidity}%</p>
+                            {selectedCrop && (
+                                <p className="text-xs text-gray-400 mt-1">
+                                Target: {selectedCrop.minHumidity}% - {selectedCrop.maxHumidity}%
+                                </p>
+                            )}
                         </div>
                     </div>
-                    </div>
+                </div>
 
                 {/* ✅ Control Buttons */}
                 <div className="flex flex-wrap gap-4 justify-between">
                     <button
                         onClick={toggleManualControl}
-                        className={`px-6 py-2 text-white font-semibold rounded-lg shadow-lg transform transition-transform duration-300 ${
-                            manualControl ? 'bg-red-500 hover:scale-105' : 'bg-blue-500 hover:scale-105'
+                        className={`px-6 py-2 text-white font-semibold rounded-lg shadow-lg transition-all duration-300 ${
+                            manualControl ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
                         }`}
                         disabled={!selectedCrop}
                     >
@@ -382,7 +429,7 @@ const ControlPanel = () => {
                     </button>
                     <button
                         onClick={analyzeIrrigation}
-                        className="px-6 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transform transition-transform duration-300"
+                        className="px-6 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-lg hover:bg-green-600 transition-colors duration-300"
                         disabled={!selectedCrop}
                     >
                         Analyze Irrigation
