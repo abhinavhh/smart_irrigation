@@ -29,7 +29,7 @@ const MultiSensorGraph = () => {
         await Promise.all(
           sensorTypes.map(async (sensorType) => {
             const response = await axios.get(
-              `http://localhost:8080/api/sensor/${sensorType}?filter=${timeRange}`
+              `https://demo-spring-1.onrender.com/api/sensor/${sensorType}?filter=${timeRange}`
             );
             allData[sensorType] = response.data;
           })
