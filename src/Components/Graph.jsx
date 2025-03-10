@@ -24,7 +24,7 @@ const Graph = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/sensor/${sensorType}?filter=${timeRange}`
+          `https://demo-spring-1.onrender.com/api/sensor/${sensorType}?filter=${timeRange}`
         );
 
         const newData = response.data;
