@@ -41,7 +41,7 @@ const Home = () => {
     let intervalId;
 
     const openSocket = () => {
-        socket = new WebSocket("wss://192.168.1.44:8080/ws/sensor-data");
+        socket = new WebSocket("wss://demo-spring-1.onrender.com/ws/sensor-data");
 
         socket.onopen = () => {
             console.log("WebSocket connected!");
