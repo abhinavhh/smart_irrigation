@@ -237,7 +237,7 @@ const Home = () => {
               onClick={() => setShowThresholds(!showThresholds)}
             >
               Selected Crop: <span className="text-white">{selectedCrop.name}</span>
-              {showThresholds ? (<p>Click to show details</p>) : ""}
+              {!showThresholds ? (<p>Click to show details</p>) : ""}
             </h3>
             <AnimatePresence>
               {showThresholds && (
