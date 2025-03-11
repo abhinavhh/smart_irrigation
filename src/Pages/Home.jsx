@@ -62,19 +62,20 @@ const Home = () => {
             }
         };
 
-        socket.onerror = (error) => {
-          toast.error('Websocket error', {
-            position: "top-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-            transition: Slide,
-          });
-        };
+        console.error("Websocket not Connected");
+        // socket.onerror = (error) => {
+        //   toast.error('Websocket error', {
+        //     position: "top-center",
+        //     autoClose: 5000,
+        //     hideProgressBar: false,
+        //     closeOnClick: false,
+        //     pauseOnHover: true,
+        //     draggable: true,
+        //     progress: undefined,
+        //     theme: "dark",
+        //     transition: Slide,
+        //   });
+        // };
 
         socket.onclose = (event) => {
             console.log("WebSocket closed:", event);
