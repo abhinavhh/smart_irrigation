@@ -27,7 +27,7 @@ const Graph = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `https://demo-spring-1.onrender.com/api/sensor/${sensorType}?filter=${timeRange}`
+          `http://localhost:8080/api/sensor/${sensorType}?filter=${timeRange}`
         );
 
         const newData = response.data;
@@ -53,7 +53,7 @@ const Graph = () => {
 
   const formatXAxis = (timestamp) => {
     if (!timestamp) return "";
-    const date = dayjs.utc(timestamp).tz("Asia/Kolkata");
+    const date = dayjs(timestamp);
     switch (timeRange) {
       case "day":
         return date.format("HH:mm");
