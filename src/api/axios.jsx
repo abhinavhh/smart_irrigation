@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-    baseURL: "https://demo-spring-1.onrender.com:443/api",
+    baseURL: "http://localhost:8080/api",
     headers: {
         "Content-Type": "application/json"
     }
