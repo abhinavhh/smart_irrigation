@@ -10,6 +10,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import axios from "axios";
 
 const Graph = () => {
@@ -50,7 +52,7 @@ const Graph = () => {
 
   const formatXAxis = (timestamp) => {
     if (!timestamp) return "";
-    const date = dayjs.utc(timestamp).tz("Asia/Kolkata");;
+    const date = dayjs.utc(timestamp).tz("Asia/Kolkata");
     switch (timeRange) {
       case "day":
         return date.format("HH:mm");
