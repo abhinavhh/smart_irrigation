@@ -13,7 +13,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import axios from "axios";
-
+dayjs.extend(utc);
+dayjs.extend(timezone);
 const Graph = () => {
   const { sensorType } = useParams();
   const [graphData, setGraphData] = useState([]);
