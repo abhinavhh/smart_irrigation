@@ -53,7 +53,7 @@ const Graph = () => {
 
   const formatXAxis = (timestamp) => {
     if (!timestamp) return "";
-    const date = dayjs.utc(timestamp).tz("Asia/Kolkata");
+    const date = dayjs(timestamp);
     switch (timeRange) {
       case "day":
         return date.format("HH:mm");
