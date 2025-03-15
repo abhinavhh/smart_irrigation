@@ -170,14 +170,24 @@ const Home = () => {
               key={key}
               variants={itemVariants}
               whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-              className="bg-gray-800 shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
               onClick={() => navigate(`/graph/${key}`)}
+              className="relative group bg-gray-800 shadow-lg rounded-2xl p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold text-teal-400">{key}</h3>
                 {/* Icon placeholders */}
               </div>
               <div className="text-4xl font-bold text-gray-300">{value}{key === "Temperature" ? "°C" : key === "Humidity" ? "%" : "%"}</div>
+              <div className="relative">
+                {/* <button className="text-blue-600 text-right hover:text-blue-200"
+                onClick={() => navigate(`/graph/${key}`)}
+                >
+                    Graph
+                </button> */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-gray-800 text-teal-400 text-sm py-2 px-4 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                 Click to View Graph Page
+                </div>
+              </div>
             </motion.div>
           ))}
         </motion.div>
@@ -191,9 +201,9 @@ const Home = () => {
                 <div key={crop.id} className="bg-gray-800 p-4 rounded-lg">
                   <h4 className="text-lg font-semibold text-green-300">{crop.name}</h4>
                   <div className="mt-2">
-                      <p className="text-gray-400">Temperature: {crop.minTemperature}°C - {crop.maxTemperature}°C</p>
-                      <p className="text-gray-400">Humidity: {crop.minHumidity}% - {crop.maxHumidity}%</p>
-                      <p className="text-gray-400">Soil Moisture: {crop.minSoilMoisture}% - {crop.maxSoilMoisture}%</p>
+                      <p className="text-gray-400 font-bold">Temperature: {crop.minTemperature}°C - {crop.maxTemperature}°C</p>
+                      <p className="text-gray-400 font-bold">Humidity: {crop.minHumidity}% - {crop.maxHumidity}%</p>
+                      <p className="text-gray-400 font-bold">Soil Moisture: {crop.minSoilMoisture}% - {crop.maxSoilMoisture}%</p>
                   </div>
                 </div>
               ))}
