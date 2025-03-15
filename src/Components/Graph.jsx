@@ -10,8 +10,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import axios from "axios";
-
+dayjs.extend(utc);
+dayjs.extend(timezone);
 const Graph = () => {
   const { sensorType } = useParams();
   const [graphData, setGraphData] = useState([]);
@@ -50,7 +53,7 @@ const Graph = () => {
 
   const formatXAxis = (timestamp) => {
     if (!timestamp) return "";
-    const date = dayjs(timestamp);
+    const date = dayjs.utc(timestamp).tz("Asia/Kolkata");
     switch (timeRange) {
       case "day":
         return date.format("HH:mm");
