@@ -62,7 +62,7 @@ const ControlPanel = () => {
         let intervalId;
     
         const openSocket = () => {
-          socket = new WebSocket("wss://https://demo-spring-1.onrender.com:443/ws/sensor-data");
+          socket = new WebSocket("wss://demo-spring-1.onrender.com:443/ws/sensor-data");
     
           socket.onopen = () => {
             console.log("WebSocket connected!");
