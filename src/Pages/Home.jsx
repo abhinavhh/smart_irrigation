@@ -39,7 +39,9 @@ const Home = () => {
     let intervalId;
 
     const openSocket = () => {
+
         socket = new WebSocket("ws://192.168.1.39:8080/ws/sensor-data");
+
 
         socket.onopen = () => {
             console.log("WebSocket connected!");
