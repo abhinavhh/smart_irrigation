@@ -47,7 +47,7 @@ const Home = () => {
     let intervalId;
 
     const openSocket = () => {
-      socket = new WebSocket("ws://192.168.1.34:8080/ws/sensor-data");
+      socket = new WebSocket("ws://192.168.1.40:8080/ws/sensor-data");
 
       socket.onopen = () => {
         console.log("WebSocket connected!");
@@ -62,6 +62,7 @@ const Home = () => {
             Temperature: data.Temperature || prevData.Temperature,
             Humidity: data.Humidity || prevData.Humidity,
             SoilMoisture: data.SoilMoisture || prevData.SoilMoisture,
+            WaterFlow: data.WaterFlow || prevData.WaterFlow,
           }));
         } catch (error) {
           console.error("Error parsing WebSocket message:", error);
