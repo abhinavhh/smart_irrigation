@@ -1,87 +1,181 @@
-import React, { useState, useEffect } from 'react'; // Import useState and useEffect
+import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { FiList, FiThermometer, FiDroplet, FiCloud, FiEdit3 } from 'react-icons/fi';
+import { toast, Slide, Bounce } from 'react-toastify';
 
 const SelectCrop = () => {
-    const [crops, setCrops] = useState([]);
-    const [selectedCrops, setSelectedCrops] = useState([]); // Array of selected crops
-    const [editedCrop, setEditedCrop] = useState(null); // Currently edited crop
+    const [crops, setCrops] = useState([]); // All available crops
+    const [selectedCrops, setSelectedCrops] = useState([]); // User's selected crops (mapping objects from backend)
+    const [editedCropMapping, setEditedCropMapping] = useState(null); // The mapping object being edited
     const [isEditing, setIsEditing] = useState(false); // Editing mode
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+    // Fetch all available crops from the backend
     useEffect(() => {
-        const fetchCropsAndSetup = async () => {
+        const fetchCrops = async () => {
             try {
-                // Fetch all crops from the database
                 const response = await axiosInstance.get('/crops/all');
                 setCrops(response.data);
-
-                // Load selected crops from localStorage
-                const savedCropsJSON = localStorage.getItem('selectedCrops');
-                if (savedCropsJSON) {
-                    const savedCrops = JSON.parse(savedCropsJSON);
-                    setSelectedCrops(savedCrops);
-                }
-
-                setLoading(false);
             } catch (err) {
                 console.error("Error fetching crops:", err);
                 setError('Failed to fetch crop data');
+            }
+        };
+
+        fetchCrops();
+    }, []);
+
+    // Fetch selected crops for the logged-in user from the backend
+    useEffect(() => {
+        const fetchUserCrops = async () => {
+            try {
+                const userId = localStorage.getItem('userId');
+                if (!userId) {
+                    toast.error('User not logged in', {
+                        position: "top-center",
+                        autoClose: 5000,
+                        transition: Bounce,
+                        theme: "dark",
+                    });
+                    return;
+                }
+                const response = await axiosInstance.get(`/usercrops/user/${userId}`);
+                setSelectedCrops(response.data);
+                setLoading(false);
+            } catch (err) {
+                console.error("Error fetching selected crops:", err);
+                setError('Failed to fetch selected crop data');
                 setLoading(false);
             }
         };
 
-        fetchCropsAndSetup();
+        fetchUserCrops();
     }, []);
 
-    const handleCropSelect = (crop) => {
-        // Check if the crop is already selected
-        const isAlreadySelected = selectedCrops.some((c) => c.id === crop.id);
+    const handleCropSelect = async (crop) => {
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+            toast.error('User not logged in', {
+                position: "top-center",
+                autoClose: 5000,
+                transition: Bounce,
+                theme: "dark",
+            });
+            return;
+        }
+
+        // Check if the crop is already selected (compare by crop.id)
+        const isAlreadySelected = selectedCrops.some((mapping) => mapping.crop.id === crop.id);
 
         let updatedCrops;
         if (isAlreadySelected) {
-            // Remove the crop if already selected
-            updatedCrops = selectedCrops.filter((c) => c.id !== crop.id);
+            // Deselect the crop by calling the backend DELETE endpoint
+            try {
+                await axiosInstance.delete('/usercrops/deselect', {
+                    params: { userId: userId, cropId: crop.id }
+                });
+                updatedCrops = selectedCrops.filter((mapping) => mapping.crop.id !== crop.id);
+            } catch (error) {
+                console.error("Error deselecting crop:", error);
+                toast.error("Failed to deselect crop", {
+                    position: "top-center",
+                    autoClose: 5000,
+                    transition: Slide,
+                    theme: "dark",
+                });
+                return;
+            }
         } else {
-            // Add the crop if not already selected
-            updatedCrops = [...selectedCrops, crop];
+            try {
+                // Call backend endpoint to select the crop for the user.
+                // Assume the endpoint returns the created mapping object including its id.
+                const response = await axiosInstance.post('/usercrops/select', null, {
+                    params: { userId: userId, cropId: crop.id }
+                });
+                // Merge the returned mapping info into the crop object.
+                const cropMapping = { id: response.data.id, crop: { ...crop, mappingId: response.data.id }, ...response.data };
+                updatedCrops = [...selectedCrops, cropMapping];
+            } catch (error) {
+                console.error("Error selecting crop:", error);
+                toast.error("Failed to select crop", {
+                    position: "top-center",
+                    autoClose: 5000,
+                    transition: Slide,
+                    theme: "dark",
+                });
+                return;
+            }
         }
-
         setSelectedCrops(updatedCrops);
-        localStorage.setItem('selectedCrops', JSON.stringify(updatedCrops));
     };
 
-    const handleEditToggle = (crop) => {
-        setEditedCrop(crop); // Set the crop to be edited
-        setIsEditing(true); // Enable editing mode
+    // When clicking the edit button, store the entire mapping object
+    const handleEditToggle = (cropMapping) => {
+        console.log("Editing mapping:", cropMapping);
+        setEditedCropMapping(cropMapping);
+        setIsEditing(true);
     };
 
-    const handleInputChange = (e, cropId) => {
+    // Handle changes to the input fields by updating the nested crop values in the mapping
+    const handleInputChange = (e, mappingId) => {
         const { name, value } = e.target;
-
-        // Update the edited crop's values
-        const updatedCrop = {
-            ...editedCrop,
-            [name]: Number(value),
+        const updatedMapping = { 
+            ...editedCropMapping, 
+            crop: { 
+                ...editedCropMapping.crop, 
+                [name]: Number(value) 
+            }
         };
+        setEditedCropMapping(updatedMapping);
 
-        setEditedCrop(updatedCrop);
-
-        // Update the selected crops array with the edited crop
-        const updatedCrops = selectedCrops.map((crop) =>
-            crop.id === cropId ? updatedCrop : crop
+        // Update the selectedCrops array with the updated mapping
+        const updatedMappings = selectedCrops.map((mapping) =>
+            mapping.id === mappingId ? updatedMapping : mapping
         );
-
-        setSelectedCrops(updatedCrops);
-        localStorage.setItem('selectedCrops', JSON.stringify(updatedCrops));
+        setSelectedCrops(updatedMappings);
     };
 
-    const handleSaveEdit = () => {
-        setIsEditing(false); // Disable editing mode
-        setEditedCrop(null); // Clear the edited crop
+    const handleSaveEdit = async () => {
+        // Ensure we have the mapping id and the edited crop data
+        if (!editedCropMapping || !editedCropMapping.id) {
+            toast.error("Mapping ID missing. Please re-select the crop.", {
+                position: "top-center",
+                autoClose: 5000,
+                transition: Bounce,
+                theme: "dark",
+            });
+            return;
+        }
+        try {
+            const updateData = {
+                customMinTemperature: editedCropMapping.crop.minTemperature,
+                customMaxTemperature: editedCropMapping.crop.maxTemperature,
+                customMinHumidity: editedCropMapping.crop.minHumidity,
+                customMaxHumidity: editedCropMapping.crop.maxHumidity,
+                customMinSoilMoisture: editedCropMapping.crop.minSoilMoisture,
+                customMaxSoilMoisture: editedCropMapping.crop.maxSoilMoisture,
+            };
+            await axiosInstance.put(`/usercrops/update/${editedCropMapping.id}`, updateData);
+            toast.success("Crop thresholds updated successfully!", {
+                position: "top-center",
+                autoClose: 5000,
+                transition: Slide,
+                theme: "dark",
+            });
+            setIsEditing(false);
+            setEditedCropMapping(null);
+        } catch (error) {
+            console.error("Error updating crop thresholds:", error);
+            toast.error("Failed to update crop thresholds", {
+                position: "top-center",
+                autoClose: 5000,
+                transition: Bounce,
+                theme: "dark",
+            });
+        }
     };
 
     const handleUseTheseCrops = () => {
@@ -89,14 +183,20 @@ const SelectCrop = () => {
     };
 
     if (loading) {
-        return <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-gray-200">Loading crops...</div>;
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-gray-200">
+                Loading crops...
+            </div>
+        );
     }
 
     if (error) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-gray-200">
                 <p className="text-xl text-red-400">{error}</p>
-                <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded">Retry</button>
+                <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded">
+                    Retry
+                </button>
             </div>
         );
     }
@@ -115,7 +215,7 @@ const SelectCrop = () => {
                                     key={crop.id}
                                     onClick={() => handleCropSelect(crop)}
                                     className={`w-full py-3 px-4 text-left rounded-lg transition-colors ${
-                                        selectedCrops.some((c) => c.id === crop.id)
+                                        selectedCrops.some((mapping) => mapping.crop.id === crop.id)
                                             ? 'bg-green-600 text-white'
                                             : 'bg-gray-600 hover:bg-gray-500 text-gray-100'
                                     }`}
@@ -131,12 +231,12 @@ const SelectCrop = () => {
                         <h3 className="text-xl font-medium mb-4 text-green-300">Selected Crops</h3>
                         {selectedCrops.length > 0 ? (
                             <div className="space-y-2">
-                                {selectedCrops.map((crop) => (
-                                    <div key={crop.id} className="bg-gray-600 p-3 rounded-lg">
+                                {selectedCrops.map((mapping) => (
+                                    <div key={mapping.id} className="bg-gray-600 p-3 rounded-lg">
                                         <div className="flex justify-between items-center">
-                                            <p className="text-lg font-semibold">{crop.name}</p>
+                                            <p className="text-lg font-semibold">{mapping.crop.name}</p>
                                             <button
-                                                onClick={() => handleEditToggle(crop)}
+                                                onClick={() => handleEditToggle(mapping)}
                                                 className="flex items-center px-3 py-1 bg-gray-500 hover:bg-gray-400 rounded-lg text-sm"
                                             >
                                                 <FiEdit3 className="mr-1" />
@@ -144,8 +244,8 @@ const SelectCrop = () => {
                                             </button>
                                         </div>
 
-                                        {/* Edit Threshold Values (Conditional Rendering) */}
-                                        {isEditing && editedCrop?.id === crop.id && (
+                                        {/* Edit Threshold Values */}
+                                        {isEditing && editedCropMapping?.id === mapping.id && (
                                             <div className="mt-4 space-y-4">
                                                 {/* Temperature */}
                                                 <div>
@@ -159,8 +259,8 @@ const SelectCrop = () => {
                                                             <input
                                                                 type="number"
                                                                 name="minTemperature"
-                                                                value={editedCrop.minTemperature}
-                                                                onChange={(e) => handleInputChange(e, crop.id)}
+                                                                value={editedCropMapping.crop.minTemperature}
+                                                                onChange={(e) => handleInputChange(e, mapping.id)}
                                                                 className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
                                                             />
                                                         </div>
@@ -169,8 +269,8 @@ const SelectCrop = () => {
                                                             <input
                                                                 type="number"
                                                                 name="maxTemperature"
-                                                                value={editedCrop.maxTemperature}
-                                                                onChange={(e) => handleInputChange(e, crop.id)}
+                                                                value={editedCropMapping.crop.maxTemperature}
+                                                                onChange={(e) => handleInputChange(e, mapping.id)}
                                                                 className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
                                                             />
                                                         </div>
@@ -189,8 +289,8 @@ const SelectCrop = () => {
                                                             <input
                                                                 type="number"
                                                                 name="minSoilMoisture"
-                                                                value={editedCrop.minSoilMoisture}
-                                                                onChange={(e) => handleInputChange(e, crop.id)}
+                                                                value={editedCropMapping.crop.minSoilMoisture}
+                                                                onChange={(e) => handleInputChange(e, mapping.id)}
                                                                 className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
                                                             />
                                                         </div>
@@ -199,8 +299,8 @@ const SelectCrop = () => {
                                                             <input
                                                                 type="number"
                                                                 name="maxSoilMoisture"
-                                                                value={editedCrop.maxSoilMoisture}
-                                                                onChange={(e) => handleInputChange(e, crop.id)}
+                                                                value={editedCropMapping.crop.maxSoilMoisture}
+                                                                onChange={(e) => handleInputChange(e, mapping.id)}
                                                                 className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
                                                             />
                                                         </div>
@@ -219,8 +319,8 @@ const SelectCrop = () => {
                                                             <input
                                                                 type="number"
                                                                 name="minHumidity"
-                                                                value={editedCrop.minHumidity}
-                                                                onChange={(e) => handleInputChange(e, crop.id)}
+                                                                value={editedCropMapping.crop.minHumidity}
+                                                                onChange={(e) => handleInputChange(e, mapping.id)}
                                                                 className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
                                                             />
                                                         </div>
@@ -229,8 +329,8 @@ const SelectCrop = () => {
                                                             <input
                                                                 type="number"
                                                                 name="maxHumidity"
-                                                                value={editedCrop.maxHumidity}
-                                                                onChange={(e) => handleInputChange(e, crop.id)}
+                                                                value={editedCropMapping.crop.maxHumidity}
+                                                                onChange={(e) => handleInputChange(e, mapping.id)}
                                                                 className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white"
                                                             />
                                                         </div>

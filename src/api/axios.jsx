@@ -1,7 +1,7 @@
 import axios from "axios";
-
+const myBaseUrl = import.meta.env.VITE_BACKEND_URL;
 const axiosInstance = axios.create({
-    baseURL: "https://demo-spring-1.onrender.com:443/api",
+    baseURL: myBaseUrl,
     headers: {
         "Content-Type": "application/json"
     }
