@@ -20,6 +20,8 @@ const ControlPanel = () => {
   const [loading, setLoading] = useState(true);
   const [isEditingTime, setIsEditingTime] = useState(false);
 
+  const websocketURL = import.meta.env.VITE_WEBSOCKET_URL;
+
   // Load selected crop mapping from localStorage or fetch from backend
   useEffect(() => {
     const savedMappingJSON = localStorage.getItem('selectedCrop');
@@ -88,7 +90,7 @@ const ControlPanel = () => {
     let intervalId;
 
     const openSocket = () => {
-      socket = new WebSocket("ws://192.168.1.40:8080/ws/sensor-data");
+      socket = new WebSocket(websocketURL);
 
       socket.onopen = () => {
         console.log("WebSocket connected!");

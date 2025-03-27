@@ -13,7 +13,7 @@ const Home = () => {
     SoilMoisture: "N/A",
   });
   const navigate = useNavigate();
-
+  const websocketURL = import.meta.env.VITE_WEBSOCKET_URL;
   // Fetch user-specific crop mappings from the backend
   useEffect(() => {
     const fetchUserCrops = async () => {
@@ -47,7 +47,7 @@ const Home = () => {
     let intervalId;
 
     const openSocket = () => {
-      socket = new WebSocket("ws://192.168.1.40:8080/ws/sensor-data");
+      socket = new WebSocket(websocketURL);
 
       socket.onopen = () => {
         console.log("WebSocket connected!");
