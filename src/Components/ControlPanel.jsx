@@ -3,7 +3,6 @@ import axiosInstance from '../api/axios';
 import { FiThermometer, FiDroplet, FiCloud, FiClock, FiEdit3 } from 'react-icons/fi';
 import { toast, Bounce, Slide } from 'react-toastify';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
 
 const ControlPanel = () => {
   const { cropId } = useParams();
