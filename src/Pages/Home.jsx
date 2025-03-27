@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChartBarIcon, PlusCircleIcon, CogIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import { WaterDropIcon, ThermometerIcon, LeafIcon } from "./CustomIcons";
 import { toast, Slide } from "react-toastify";
-
+import { websocketURL } from "../Components/ControlPanel";
 const Home = () => {
   const [selectedCrop, setSelectedCrop] = useState([]);
   const [sensorData, setSensorData] = useState({
@@ -39,7 +39,7 @@ const Home = () => {
     let intervalId;
 
     const openSocket = () => {
-        socket = new WebSocket("wss://demo-spring-1.onrender.com:443/ws/sensor-data");
+        socket = new WebSocket(websocketURL);
 
         socket.onopen = () => {
             console.log("WebSocket connected!");

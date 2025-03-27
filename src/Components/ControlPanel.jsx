@@ -3,6 +3,7 @@ import axiosInstance from '../api/axios';
 import { FiThermometer, FiDroplet, FiCloud, FiClock, FiEdit3 } from 'react-icons/fi';
 import { toast, Bounce, Slide } from 'react-toastify';
 
+export const websocketURL = process.env.WEBSOCKET_URL;
 const ControlPanel = () => {
     const [selectedCrop, setSelectedCrop] = useState(null);
     const [sensorData, setSensorData] = useState({
@@ -62,7 +63,7 @@ const ControlPanel = () => {
         let intervalId;
     
         const openSocket = () => {
-          socket = new WebSocket("wss://demo-spring-1.onrender.com:443/ws/sensor-data");
+          socket = new WebSocket(websocketURL);
     
           socket.onopen = () => {
             console.log("WebSocket connected!");
