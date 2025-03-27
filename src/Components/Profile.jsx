@@ -189,6 +189,8 @@ const Profile = () => {
     
     const confirmLogout = () => {
         localStorage.removeItem('username');
+        localStorage.removeItem("userId");
+        localStorage.removeItem("selectedCrops");
         navigate('/login');
         toast.dismiss(); // Close the toast
     };

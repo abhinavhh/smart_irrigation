@@ -28,7 +28,6 @@ const Navbar = ({ selectedCrop, onLogout }) => {
       label: selectedCrop ? "Change Crop" : "Add Crop", 
       color: "bg-emerald-600" 
     },
-    { path: "/control-panel", icon: CogIcon, label: "Controls", color: "bg-amber-600" },
     { path: "/notifications", icon: BellIcon, label: "Alerts", color: "bg-purple-600" },
     { path: "/profile", icon: UserCircleIcon, label: "Profile", color: "bg-slate-600" },
   ];
@@ -102,7 +101,7 @@ const Navbar = ({ selectedCrop, onLogout }) => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden bg-gray-900 border-t border-gray-800 rounded-bl-xl absolute top-16 left-2/4 w-full"
+            className="md:hidden bg-gray-900 border-t border-gray-800 rounded-bl-xl absolute top-16 left-2/4 w-1/2"
           >
             <div className="py-3 px-5 flex flex-col space-y-2">
               {routes.map((route) => (

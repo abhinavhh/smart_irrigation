@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import dayjs from "dayjs";
 import axios from "axios";
+import { toast, Slide } from "react-toastify";
 
 const MultiSensorGraph = () => {
   const [graphData, setGraphData] = useState([]);
@@ -23,18 +24,21 @@ const MultiSensorGraph = () => {
 
     const fetchSensorData = async () => {
       try {
+        // Get userId from localStorage for multi-user filtering
+        const userId = localStorage.getItem("userId") || "";
         const sensorTypes = ["Temperature", "Humidity", "SoilMoisture"];
         const allData = {};
 
         await Promise.all(
-          sensorTypes.map(async (sensorType) => {
+          sensorTypes.map(async (type) => {
             const response = await axios.get(
-              `http://localhost:8080/api/sensor/${sensorType}?filter=${timeRange}`
+              `http://localhost:8080/api/sensor/${type}?filter=${timeRange}&userId=${userId}`
             );
-            allData[sensorType] = response.data;
+            allData[type] = response.data;
           })
         );
 
+        // Merge data based on Temperature array (assuming aligned arrays)
         const mergedData = [];
         allData.Temperature.forEach((tempEntry, index) => {
           mergedData.push({
@@ -55,6 +59,12 @@ const MultiSensorGraph = () => {
         }
       } catch (error) {
         console.error("Error fetching sensor data:", error);
+        toast.error("Failed to fetch sensor data", {
+          position: "top-center",
+          autoClose: 5000,
+          theme: "dark",
+          transition: Slide,
+        });
       }
     };
 
@@ -79,28 +89,31 @@ const MultiSensorGraph = () => {
     }
   };
 
-  // Function to calculate summary statistics
-  const getSummary = (key) => {
-    const values = graphData.map((item) => item[key]).filter((val) => val !== null);
-    if (values.length === 0) return { count: 0, avg: 0, min: 0, max: 0 };
-
-    const count = values.length;
-    const avg = (values.reduce((sum, val) => sum + val, 0) / count).toFixed(2);
-    const min = Math.min(...values).toFixed(2);
-    const max = Math.max(...values).toFixed(2);
-
-    return { count, avg, min, max };
-  };
+  const totalDataPoints = graphData.length;
+  const averageValue =
+    totalDataPoints > 0
+      ? (
+          graphData.reduce((sum, item) => sum + item.value, 0) / totalDataPoints
+        ).toFixed(2)
+      : "N/A";
+  const minValue =
+    totalDataPoints > 0
+      ? Math.min(...graphData.map((item) => item.value)).toFixed(2)
+      : "N/A";
+  const maxValue =
+    totalDataPoints > 0
+      ? Math.max(...graphData.map((item) => item.value)).toFixed(2)
+      : "N/A";
 
   return (
     <div className="p-6 bg-gray-900 min-h-screen text-gray-200">
       <div className="flex justify-between items-center mb-6">
-        {/* <button
+        <button
           onClick={() => navigate("/home")}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all"
         >
           Back to Home
-        </button> */}
+        </button>
         <div className="flex items-center gap-4">
           <label htmlFor="time-range" className="font-medium text-gray-300">
             Time Range:
@@ -118,11 +131,11 @@ const MultiSensorGraph = () => {
         </div>
       </div>
 
+      {/* Updated header */}
       <h2 className="text-2xl font-bold mb-4 text-gray-100">
         Multi-Sensor Real-Time Readings
       </h2>
 
-      {/* Graph Section */}
       <div className="bg-gray-800 p-4 rounded shadow-md">
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={graphData}>
@@ -141,7 +154,6 @@ const MultiSensorGraph = () => {
               }}
             />
             <Legend />
-
             <Line
               type="monotone"
               dataKey="Temperature"
@@ -167,37 +179,33 @@ const MultiSensorGraph = () => {
         </ResponsiveContainer>
       </div>
 
-      {/* Summary Section */}
-      {graphData.length > 0 && (
-        <div className="mt-6 bg-gray-800 p-4 rounded shadow-md">
-          <h3 className="text-lg font-semibold mb-3">Data Summary</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {["Temperature", "Humidity", "SoilMoisture"].map((sensor) => {
-              const summary = getSummary(sensor);
-              return (
-                <div key={sensor} className="bg-gray-700 p-4 rounded shadow">
-                  <h4 className="text-xl font-semibold text-center">
-                    {sensor}
-                  </h4>
-                  <p className="text-sm text-gray-400">Data Points</p>
-                  <p className="text-xl font-bold">{summary.count}</p>
-                  <p className="text-sm text-gray-400">Average</p>
-                  <p className="text-xl font-bold">{summary.avg}</p>
-                  <p className="text-sm text-gray-400">Min Value</p>
-                  <p className="text-xl font-bold">{summary.min}</p>
-                  <p className="text-sm text-gray-400">Max Value</p>
-                  <p className="text-xl font-bold">{summary.max}</p>
-                </div>
-              );
-            })}
-          </div>
+      {graphData.length === 0 && (
+        <div className="text-center mt-4 p-4 bg-yellow-800 text-yellow-200 rounded">
+          No data available for this sensor type and time range.
         </div>
       )}
 
-      {/* No Data Message */}
-      {graphData.length === 0 && (
-        <div className="text-center mt-4 p-4 bg-yellow-800 text-yellow-200 rounded">
-          No data available for this time range.
+      {graphData.length > 0 && (
+        <div className="mt-6 bg-gray-800 p-4 rounded shadow-md">
+          <h3 className="text-lg font-semibold mb-3">Data Summary</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-gray-700 p-3 rounded">
+              <p className="text-sm text-gray-400">Data Points</p>
+              <p className="text-xl font-bold">{totalDataPoints}</p>
+            </div>
+            <div className="bg-gray-700 p-3 rounded">
+              <p className="text-sm text-gray-400">Average</p>
+              <p className="text-xl font-bold">{averageValue}</p>
+            </div>
+            <div className="bg-gray-700 p-3 rounded">
+              <p className="text-sm text-gray-400">Min Value</p>
+              <p className="text-xl font-bold">{minValue}</p>
+            </div>
+            <div className="bg-gray-700 p-3 rounded">
+              <p className="text-sm text-gray-400">Max Value</p>
+              <p className="text-xl font-bold">{maxValue}</p>
+            </div>
+          </div>
         </div>
       )}
     </div>

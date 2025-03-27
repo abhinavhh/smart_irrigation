@@ -12,9 +12,12 @@ import {
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-import axios from "axios";
+import axiosInstance from "../api/axios"; // Use your configured axios instance
+import { toast, Slide } from "react-toastify";
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
+
 const Graph = () => {
   const { sensorType } = useParams();
   const [graphData, setGraphData] = useState([]);
@@ -26,8 +29,10 @@ const Graph = () => {
 
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:8080/api/sensor/${sensorType}?filter=${timeRange}`
+        // Retrieve userId from localStorage for multi-user filtering
+        const userId = localStorage.getItem("userId") || "";
+        const response = await axiosInstance.get(
+          `/sensor/${sensorType}?filter=${timeRange}&userId=${userId}`
         );
 
         const newData = response.data;
@@ -42,6 +47,12 @@ const Graph = () => {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+        toast.error("Failed to fetch sensor data", {
+          position: "top-center",
+          autoClose: 5000,
+          theme: "dark",
+          transition: Slide,
+        });
       }
     };
 
@@ -66,7 +77,7 @@ const Graph = () => {
     }
   };
 
-  // Calculate Summary Data
+  // Calculate summary statistics (optional)
   const totalDataPoints = graphData.length;
   const averageValue =
     totalDataPoints > 0

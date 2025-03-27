@@ -50,7 +50,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword/>}/>
         <Route path="/notifications" element={<Notification/>}/>
         <Route path="/graph/:sensorType" element={<Graph/>}/>
-        <Route path="/control-panel" element={<ControlPanel/>}/>
+        <Route path="/control-panel/:cropId" element={<ControlPanel/>}/>
         <Route path="/profile" element={<Profile/>}/>
         <Route path="/multi-sensor-graph" element={<MultiSensorGraph/>}/>
       </Routes>
