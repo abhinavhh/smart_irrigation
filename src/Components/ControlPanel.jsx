@@ -360,21 +360,6 @@ const ControlPanel = () => {
       theme: "dark",
       transition: Slide,
     });
-  
-    try {
-      // Construct payload for backend; adjust URL to match your endpoint
-      const payload = { userId, cropId };
-      const response = await axiosInstance.put('/usercrops/store', payload);
-      console.log("Backend response:", response.data);
-    } catch (error) {
-      console.error("Error sending data to backend:", error);
-      toast.error("Error updating backend", {
-        position: "bottom-right",
-        autoClose: 1500,
-        theme: "dark",
-        transition: Slide,
-      });
-    }
   };
   
 

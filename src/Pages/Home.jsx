@@ -62,7 +62,7 @@ const Home = () => {
             Temperature: data.Temperature || prevData.Temperature,
             Humidity: data.Humidity || prevData.Humidity,
             SoilMoisture: data.SoilMoisture || prevData.SoilMoisture,
-            WaterFlow: data.WaterFlow || prevData.WaterFlow,
+            // WaterFlow: data.WaterFlow || prevData.WaterFlow,
           }));
         } catch (error) {
           console.error("Error parsing WebSocket message:", error);

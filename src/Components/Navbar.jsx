@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-// import image from '../assets/untitled-5-o';
+import image from '/Users/hp/Documents/React/projectS8/local/smart_irrigation_local/smart_irrigation/src/assets/untitled-5-o.avif';
 import {
   ChartBarIcon,
   PlusCircleIcon,
@@ -46,7 +46,7 @@ const Navbar = ({ selectedCrop, onLogout }) => {
             className="flex items-center"
           >
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center mr-3">
-              <img src="../assets/untitled-5-o.avif" alt="Logo" />
+              <img src={image} alt="Logo" />
             </div>
             <h1 className="text-2xl font-bold bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">
               solidFlow
