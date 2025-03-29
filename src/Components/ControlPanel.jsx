@@ -228,10 +228,13 @@ const ControlPanel = () => {
         return;
       }
       // Send request to reset manual control flags (set open=false, close=false)
-      const response = await axiosInstance.post(
+      const response1 = await axiosInstance.post(
         `/irrigation/manual-control?open=false&close=false&userId=${userId}&cropId=${currentCropId}`
       );
-      toast.success("Automation enabled: " + response.data, {
+      const response2 = await axiosInstance.put(
+        `/irrigation/automate?userId=${userId}&cropId=${currentCropId}`
+      );
+      toast.success("Automation enabled: " + response1.data, {
         position: "bottom-right",
         theme: "dark",
         transition: Slide,
@@ -340,6 +343,11 @@ const ControlPanel = () => {
 
   /** Store current cropId and userId in localStorage */
   const storeCropAndUserInfo = async () => {
+    // Remove existing values
+    localStorage.removeItem('currentCropId');
+    localStorage.removeItem('currentUserId');
+  
+    // Retrieve the selected crop mapping from localStorage
     const storedCrop = localStorage.getItem("selectedCrop");
     let cropId;
     if (storedCrop) {
@@ -353,7 +361,7 @@ const ControlPanel = () => {
       localStorage.setItem('currentUserId', userId);
       console.log("Stored User ID:", userId);
     }
-    
+  
     toast.success('Current crop and user info saved to localStorage!', {
       position: "bottom-right",
       autoClose: 1500,
@@ -361,6 +369,7 @@ const ControlPanel = () => {
       transition: Slide,
     });
   };
+  
   
 
   if (loading) {
