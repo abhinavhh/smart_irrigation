@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import image from '../assets/untitled-5-o.avif';
+
+import image from "../assets/untitled-5-o.avif";
+
 import {
   ChartBarIcon,
   PlusCircleIcon,
