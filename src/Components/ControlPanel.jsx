@@ -3,7 +3,6 @@ import axiosInstance from '../api/axios';
 import { FiThermometer, FiDroplet, FiCloud, FiClock, FiEdit3 } from 'react-icons/fi';
 import { toast, Bounce, Slide } from 'react-toastify';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
 
 export const websocketURL = process.env.WEBSOCKET_URL;
 const ControlPanel = () => {
@@ -16,10 +15,10 @@ const ControlPanel = () => {
   });
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [manualControl, setManualControl] = useState(false);
   const [irrigationStatus, setIrrigationStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [isEditingTime, setIsEditingTime] = useState(false);
+  const [isManualSelect, setIsManualSelect] = useState(false);
 
   const websocketURL = import.meta.env.VITE_WEBSOCKET_URL;
 
@@ -154,13 +153,13 @@ const ControlPanel = () => {
       clearInterval(intervalId);
       closeSocket();
     };
-  }, []);
+  }, [websocketURL]);
 
-  /** Handle Manual Valve Control */
-  const toggleManualControl = async () => {
+  /** Handle Manual Valve Control - Open */
+  const toggleOpenControl = async () => {
     try {
-      const userId = localStorage.getItem('userId'); // assuming it's stored as a string
-      const currentCropId = selectedMapping?.crop?.id; // from your mapping
+      const userId = localStorage.getItem('userId');
+      const currentCropId = selectedMapping?.crop?.id;
       if (!userId || !currentCropId) {
         toast.error("Missing user or crop information", {
           position: "bottom-right",
@@ -169,15 +168,15 @@ const ControlPanel = () => {
         });
         return;
       }
+      // Send request to open valve (set open=true, close=false)
       const response = await axiosInstance.post(
-        `/irrigation/manual-control?openValve=${!manualControl}&userId=${userId}&cropId=${currentCropId}`
+        `/irrigation/manual-control?open=true&close=false&userId=${userId}&cropId=${currentCropId}`
       );
       toast.success(response.data, {
         position: "bottom-right",
         theme: "dark",
         transition: Slide,
       });
-      setManualControl(!manualControl);
     } catch (error) {
       toast.error("Error controlling valve: " + error.message, {
         position: "bottom-right",
@@ -186,7 +185,73 @@ const ControlPanel = () => {
       });
     }
   };
-  
+
+  /** Handle Manual Valve Control - Close */
+  const toggleCloseControl = async () => {
+    try {
+      const userId = localStorage.getItem('userId');
+      const currentCropId = selectedMapping?.crop?.id;
+      if (!userId || !currentCropId) {
+        toast.error("Missing user or crop information", {
+          position: "bottom-right",
+          theme: "dark",
+          transition: Bounce,
+        });
+        return;
+      }
+      // Send request to close valve (set open=false, close=true)
+      const response = await axiosInstance.post(
+        `/irrigation/manual-control?open=false&close=true&userId=${userId}&cropId=${currentCropId}`
+      );
+      toast.success(response.data, {
+        position: "bottom-right",
+        theme: "dark",
+        transition: Slide,
+      });
+    } catch (error) {
+      toast.error("Error controlling valve: " + error.message, {
+        position: "bottom-right",
+        theme: "dark",
+        transition: Bounce,
+      });
+    }
+  };
+
+  /** Handle Automation Enable */
+  const toggleAutomation = async () => {
+    try {
+      const userId = localStorage.getItem('userId');
+      const currentCropId = selectedMapping?.crop?.id;
+      if (!userId || !currentCropId) {
+        toast.error("Missing user or crop information", {
+          position: "bottom-right",
+          theme: "dark",
+          transition: Bounce,
+        });
+        return;
+      }
+      // Send request to reset manual control flags (set open=false, close=false)
+      const response1 = await axiosInstance.post(
+        `/irrigation/manual-control?open=false&close=false&userId=${userId}&cropId=${currentCropId}`
+      );
+      const response2 = await axiosInstance.put(
+        `/irrigation/automate?userId=${userId}&cropId=${currentCropId}`
+      );
+      toast.success("Automation enabled: " + response1.data, {
+        position: "bottom-right",
+        theme: "dark",
+        transition: Slide,
+      });
+      // Hide manual controls by toggling off manual selection
+      setIsManualSelect(false);
+    } catch (error) {
+      toast.error("Error enabling automation: " + error.message, {
+        position: "bottom-right",
+        theme: "dark",
+        transition: Bounce,
+      });
+    }
+  };
 
   /** Trigger Automatic Irrigation Analysis */
   const analyzeIrrigation = async () => {
@@ -267,6 +332,11 @@ const ControlPanel = () => {
     setIsEditingTime(!isEditingTime);
   };
 
+  // Button toggling for manual control
+  const toggleButton = () => {
+    setIsManualSelect(!isManualSelect);
+  };
+
   /** Cancel Editing */
   const cancelEditing = () => {
     setStartTime(selectedMapping?.customIrrigationStartTime || '');
@@ -276,6 +346,11 @@ const ControlPanel = () => {
 
   /** Store current cropId and userId in localStorage */
   const storeCropAndUserInfo = async () => {
+    // Remove existing values
+    localStorage.removeItem('currentCropId');
+    localStorage.removeItem('currentUserId');
+  
+    // Retrieve the selected crop mapping from localStorage
     const storedCrop = localStorage.getItem("selectedCrop");
     let cropId;
     if (storedCrop) {
@@ -289,29 +364,15 @@ const ControlPanel = () => {
       localStorage.setItem('currentUserId', userId);
       console.log("Stored User ID:", userId);
     }
-    
+  
     toast.success('Current crop and user info saved to localStorage!', {
       position: "bottom-right",
       autoClose: 1500,
       theme: "dark",
       transition: Slide,
     });
-  
-    try {
-      // Construct payload for backend; adjust URL to match your endpoint
-      const payload = { userId, cropId };
-      const response = await axiosInstance.put('/usercrops/store', payload);
-      console.log("Backend response:", response.data);
-    } catch (error) {
-      console.error("Error sending data to backend:", error);
-      toast.error("Error updating backend", {
-        position: "bottom-right",
-        autoClose: 1500,
-        theme: "dark",
-        transition: Slide,
-      });
-    }
   };
+  
   
 
   if (loading) {
@@ -474,13 +535,36 @@ const ControlPanel = () => {
         {/* Control Buttons */}
         <div className="flex flex-wrap gap-4 justify-between">
           <button
-            onClick={toggleManualControl}
+            onClick={toggleButton}
             className={`px-6 py-2 text-white font-semibold rounded-lg shadow-lg transition-all duration-300 ${
-              manualControl ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
+              isManualSelect ? 'bg-white-500' : 'bg-blue-500 hover:bg-blue-600'
             }`}
             disabled={!selectedMapping}
           >
-            {manualControl ? 'Close Valve' : 'Open Valve Manually'}
+            {isManualSelect ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-4">
+                  <button 
+                    onClick={toggleOpenControl}
+                    className="px-6 py-2 text-white font-semibold rounded-lg shadow-lg transition-all duration-300 bg-blue-500 hover:bg-blue-600"
+                  >
+                    Open
+                  </button>
+                  <button
+                    onClick={toggleCloseControl}
+                    className="px-6 py-2 text-white font-semibold rounded-lg shadow-lg transition-all duration-300 bg-red-500 hover:bg-red-600"
+                  >
+                    Close
+                  </button>
+                </div>
+                <button
+                  onClick={toggleAutomation}
+                  className="px-6 py-2 text-white font-semibold rounded-lg shadow-lg transition-all duration-300 bg-green-500 hover:bg-green-600"
+                >
+                  Enable Automation
+                </button>
+              </div>
+            ) : "Manual Control"}
           </button>
           <button
             onClick={analyzeIrrigation}

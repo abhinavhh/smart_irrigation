@@ -2,118 +2,94 @@ import React, { useState, useEffect, useRef } from "react";
 import axiosInstance from "../api/axios";
 import { toast, Slide } from "react-toastify";
 import dayjs from "dayjs";
-import { BellIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { BellIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 
-function Notification() {
+function NotificationComponent() {
   const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const lastNotificationTimeRef = useRef(0);
   const userId = localStorage.getItem("userId"); // Get logged-in user ID
 
-  // Fetch Notifications from the backend
+  // Fetch existing notifications from the backend on component mount
   useEffect(() => {
-    if (!userId) return;
-    axiosInstance
-      .get(`/notifications?userId=${userId}`)
-      .then((response) => setNotifications(response.data))
-      .catch((error) => console.error("Error fetching notifications:", error));
+    const fetchNotifications = async () => {
+      if (!userId) {
+        console.warn("User not logged in");
+        return;
+      }
+      try {
+        const response = await axiosInstance.get(`/notifications?userId=${userId}`);
+        setNotifications(response.data);
+        // Count unread notifications
+        const unread = response.data.filter((n) => !n.read).length;
+        setUnreadCount(unread);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+        toast.error("Failed to load notifications");
+      }
+    };
+
+    fetchNotifications();
   }, [userId]);
 
-  // Check Sensor Data Against User-Specific Thresholds
-  const checkSensorThresholds = async () => {
-    if (!userId) {
-      console.warn("User not logged in");
-      return;
-    }
-
+  // Function to mark a notification as read
+  const markNotificationAsRead = async (notificationId) => {
     try {
-      // Fetch the latest sensor data for the user
-      const sensorResponse = await axiosInstance.get(
-        `/sensor/latest`
+      await axiosInstance.patch(`/notifications/${notificationId}/read`, { userId });
+      
+      // Update local state
+      const updatedNotifications = notifications.map(notification => 
+        notification.id === notificationId 
+          ? { ...notification, read: true } 
+          : notification
       );
-      const latestData = sensorResponse.data;
-
-      // Fetch user-defined threshold settings
-      const thresholdsResponse = await axiosInstance.get(
-        `/usercrops/thresholds?userId=${userId}`
-      );
-      const thresholds = thresholdsResponse.data;
-
-      const outOfRangeMessages = [];
-
-      if (latestData.temperature !== undefined) {
-        if (
-          latestData.temperature < thresholds.minTemperature ||
-          latestData.temperature > thresholds.maxTemperature
-        ) {
-          outOfRangeMessages.push(
-            `Temperature ${latestData.temperature}°C is out of range (${thresholds.minTemperature}°C - ${thresholds.maxTemperature}°C).`
-          );
-        }
-      }
-
-      if (latestData.humidity !== undefined) {
-        if (
-          latestData.humidity < thresholds.minHumidity ||
-          latestData.humidity > thresholds.maxHumidity
-        ) {
-          outOfRangeMessages.push(
-            `Humidity ${latestData.humidity}% is out of range (${thresholds.minHumidity}% - ${thresholds.maxHumidity}%).`
-          );
-        }
-      }
-
-      if (latestData.soilMoisture !== undefined) {
-        if (
-          latestData.soilMoisture < thresholds.minSoilMoisture ||
-          latestData.soilMoisture > thresholds.maxSoilMoisture
-        ) {
-          outOfRangeMessages.push(
-            `Soil Moisture ${latestData.soilMoisture}% is out of range (${thresholds.minSoilMoisture}% - ${thresholds.maxSoilMoisture}%).`
-          );
-        }
-      }
-
-      // If out-of-range values are detected, send a notification
-      if (outOfRangeMessages.length > 0) {
-        const now = Date.now();
-        if (now - lastNotificationTimeRef.current >= 1000) {
-          const notificationMessage = outOfRangeMessages.join(" ");
-
-          // Store notification in backend
-          await axiosInstance.post("/notifications", {
-            userId,
-            message: notificationMessage,
-          });
-
-          // Update frontend state
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: Date.now(),
-              message: notificationMessage,
-              createdAt: new Date().toISOString(),
-            },
-          ]);
-
-          // Show toast alert
-          toast.info(notificationMessage, {
-            position: "bottom-right",
-            autoClose: 5000,
-            transition: Slide,
-          });
-
-          lastNotificationTimeRef.current = now;
-        }
-      }
+      
+      setNotifications(updatedNotifications);
+      setUnreadCount(prev => prev - 1);
     } catch (error) {
-      console.error("Error checking sensor thresholds:", error);
+      console.error("Error marking notification as read:", error);
     }
   };
 
-  // Run check every 30 minutes
+  // Check for new notifications periodically
+  const checkUserNotification = async () => {
+    if (!userId) return;
+
+    try {
+      const response = await axiosInstance.post(
+        `/notifications/check?userId=${userId}`
+      );
+
+      if (response.data && response.data.length > 0) {
+        const latestNotification = response.data[0];
+        const latestTime = new Date(latestNotification.createdAt).getTime();
+
+        // Update notifications and show toast for new notifications
+        if (latestTime > lastNotificationTimeRef.current) {
+          setNotifications(response.data);
+          
+          // Count unread notifications
+          const unread = response.data.filter((n) => !n.read).length;
+          setUnreadCount(unread);
+
+          toast.info(latestNotification.message, {
+            position: "bottom-right",
+            autoClose: 3000,
+            transition: Slide,
+          });
+
+          lastNotificationTimeRef.current = latestTime;
+        }
+      }
+    } catch (error) {
+      console.error("Error checking user notification:", error);
+    }
+  };
+
+  // Run notification check every 10 seconds
   useEffect(() => {
-    const intervalId = setInterval(checkSensorThresholds, 1000);
+    const intervalId = setInterval(checkUserNotification, 10000);
     return () => clearInterval(intervalId);
   }, [userId]);
 
@@ -127,7 +103,7 @@ function Notification() {
             Notifications
           </h1>
           <span className="text-teal-400 bg-gray-800 px-4 py-1 rounded-full shadow-md">
-            {notifications.length} Alerts
+            {unreadCount} Unread Alerts
           </span>
         </div>
 
@@ -142,19 +118,19 @@ function Notification() {
               {notifications.map((notification) => (
                 <li
                   key={notification.id}
-                  className="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-all duration-300"
+                  className={`rounded-lg p-4 transition-all duration-300 ${
+                    notification.read 
+                      ? "bg-gray-700 hover:bg-gray-600" 
+                      : "bg-teal-900/30 hover:bg-teal-900/50"
+                  }`}
+                  onClick={() => !notification.read && markNotificationAsRead(notification.id)}
                 >
-                  <div className="flex items-start">
-                    <ExclamationCircleIcon className="w-6 h-6 text-yellow-400 mr-3 mt-1 flex-shrink-0" />
-                    <div className="flex-grow">
-                      <p className="text-gray-200">{notification.message}</p>
-                      <p className="text-gray-400 text-sm mt-2">
-                        {dayjs(notification.createdAt).format(
-                          "MM/DD/YYYY HH:mm:ss"
-                        )}
-                      </p>
-                    </div>
-                  </div>
+                  <p className={`${notification.read ? 'text-gray-400' : 'text-gray-200 font-semibold'}`}>
+                    {notification.message}
+                  </p>
+                  <p className="text-gray-400 text-sm mt-2">
+                    {dayjs(notification.createdAt).format("MM/DD/YYYY HH:mm:ss")}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -165,4 +141,4 @@ function Notification() {
   );
 }
 
-export default Notification;
+export default NotificationComponent;

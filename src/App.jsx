@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route , Navigate} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route , Navigate, useLocation} from "react-router-dom";
 import Home from "./Pages/Home";
 import Profile from "./Components/Profile";
 import Login from "./Pages/Login";
@@ -21,6 +21,10 @@ import Navbar from "./Components/Navbar";
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  const location = useLocation();
+  const hideNavbarPaths = ['/login', '/register'];
+  const showNavbar = !hideNavbarPaths.includes(location.pathname);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsAuthenticated(!!token);
@@ -38,7 +42,7 @@ function App() {
   return (
     
     <MantineProvider>
-      <Navbar />
+      {showNavbar && <Navbar />}
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
