@@ -9,6 +9,7 @@ function NotificationComponent() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const lastNotificationTimeRef = useRef(0);
+  const [notificationButton, setNotificationButton] = useState(false);
   const userId = localStorage.getItem("userId"); // Get logged-in user ID
 
   // Fetch existing notifications from the backend on component mount
@@ -51,9 +52,13 @@ function NotificationComponent() {
       console.error("Error marking notification as read:", error);
     }
   };
-
+  function showToast(){
+    toast.success("Notification Enabled");
+  }
   // Check for new notifications periodically
   const checkUserNotification = async () => {
+    setNotificationButton(!notificationButton);
+    toast.success("Notification Enabled");
     if (!userId) return;
 
     try {
@@ -88,10 +93,7 @@ function NotificationComponent() {
   };
 
   // Run notification check every 10 seconds
-  useEffect(() => {
-    const intervalId = setInterval(checkUserNotification, 10000);
-    return () => clearInterval(intervalId);
-  }, [userId]);
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 pt-20 pb-6 px-6 font-sans">
@@ -135,6 +137,11 @@ function NotificationComponent() {
               ))}
             </ul>
           )}
+          <motion.div>
+            <button 
+            className="p-2 flex bg-blue-700 border-0 mt-2 rounded-lg"
+            onClick={checkUserNotification}>Enable Notification</button>
+          </motion.div>
         </div>
       </motion.div>
     </div>
