@@ -4,6 +4,7 @@ import { FiThermometer, FiDroplet, FiCloud, FiClock, FiEdit3 } from 'react-icons
 import { toast, Bounce, Slide } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 
+export const websocketURL = process.env.WEBSOCKET_URL;
 const ControlPanel = () => {
   const { cropId } = useParams();
   const [selectedMapping, setSelectedMapping] = useState(null); // user crop mapping object
@@ -20,6 +21,7 @@ const ControlPanel = () => {
   const [isManualSelect, setIsManualSelect] = useState(false);
 
   const websocketURL = import.meta.env.VITE_WEBSOCKET_URL;
+
 
   // Load selected crop mapping from localStorage or fetch from backend
   useEffect(() => {
@@ -54,6 +56,7 @@ const ControlPanel = () => {
         // Filter for the mapping matching the cropId
         const mapping = response.data.find(
           (m) => m?.crop?.id?.toString() === cropId?.toString()
+
         );
         if (mapping) {
           setSelectedMapping(mapping);
