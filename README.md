@@ -101,8 +101,8 @@ graph TD
     style B fill:#2196F3,stroke:#1976D2
     style C fill:#607D8B,stroke:#455A64
     style E fill:#FF5722,stroke:#E64A19
-
-```bash
+```
+```mermaid
 ## Installation ⚡
 
 ### Prerequisites
