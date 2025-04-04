@@ -102,6 +102,7 @@ graph TD
     style C fill:#607D8B,stroke:#455A64
     style E fill:#FF5722,stroke:#E64A19
 
+```bash
 ## Installation ⚡
 
 ### Prerequisites
