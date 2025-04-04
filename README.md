@@ -1,4 +1,4 @@
-```markdown
+
 # SolidFlow 🌿💧  
 **Intelligent Agricultural Automation System**
 
@@ -86,7 +86,6 @@
 
 ## System Architecture 🏗️
 
-```mermaid
 graph TD
     A[IoT Sensors] -->|BLE/WiFi| B(Microcontroller)
     B -->|MQTT| C[Spring Boot API]
@@ -101,7 +100,6 @@ graph TD
     style B fill:#2196F3,stroke:#1976D2
     style C fill:#607D8B,stroke:#455A64
     style E fill:#FF5722,stroke:#E64A19
-```
 
 ## Installation ⚡
 
@@ -112,7 +110,6 @@ graph TD
 - Maven 3.9+
 
 ### Backend Setup
-```bash
 # Clone repository
 git clone https://github.com/yourusername/solidflow.git
 cd solidflow/backend
@@ -126,10 +123,8 @@ nano .env
 
 # Start application
 java -jar target/solidflow-*.jar
-```
 
 ### Frontend Setup
-```bash
 cd ../frontend
 
 # Install dependencies
@@ -141,12 +136,10 @@ nano .env
 
 # Start development server
 npm run dev
-```
 
 ## Configuration ⚙️
 
 ### Backend (.env)
-```properties
 # Database Configuration
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/solidflow
 SPRING_DATASOURCE_USERNAME=postgres
@@ -165,26 +158,22 @@ SPRING_MAIL_PASSWORD=app_specific_password
 # WebSocket
 WEBSOCKET_ENDPOINT=/api/ws
 STOMP_BROKER=/topic
-```
 
 ## API Documentation 📚
 
 Explore our comprehensive API documentation:  
 [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?logo=swagger&logoColor=black)](http://localhost:8080/swagger-ui.html)
 
-```http
 GET /api/sensors
 Authorization: Bearer {token}
-```
 
-```json
 {
   "temperature": 23.5,
   "humidity": 65,
   "soilMoisture": 42,
   "timestamp": "2023-10-15T14:30:00Z"
 }
-```
+
 
 ## Contributing 🤝
 
