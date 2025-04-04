@@ -26,3 +26,7 @@ CREATE TABLE user_crop_edits (
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (crop_id) REFERENCES crops(id)
 );
+
+
+ALTER TABLE notifications
+ADD COLUMN is_read BOOLEAN NOT NULL DEFAULT false;
