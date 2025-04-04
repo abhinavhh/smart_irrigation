@@ -4,7 +4,7 @@ import { FiThermometer, FiDroplet, FiCloud, FiClock, FiEdit3 } from 'react-icons
 import { toast, Bounce, Slide } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 
-export const websocketURL = process.env.WEBSOCKET_URL;
+export const websocketURL = import.meta.env.WEBSOCKET_URL;
 const ControlPanel = () => {
   const { cropId } = useParams();
   const [selectedMapping, setSelectedMapping] = useState(null); // user crop mapping object
