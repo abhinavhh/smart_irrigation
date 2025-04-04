@@ -99,7 +99,10 @@ graph TD
     style A fill:#4CAF50,stroke:#388E3C
     style B fill:#2196F3,stroke:#1976D2
     style C fill:#607D8B,stroke:#455A64
-    style E fill:#FF5722,stroke:#E64A19
+    style E fill:#FF5722,stroke:#E64A19```
+
+
+
 ## Installation ⚡
 
 ### Prerequisites
