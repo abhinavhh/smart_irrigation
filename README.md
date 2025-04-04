@@ -1,201 +1,98 @@
-# 🌱 Smart IoT-Enabled Drip Irrigation System
+# SolidFlow - Smart Irrigation System 🌱💧
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Blynk](https://img.shields.io/badge/Blynk-IoT-brightgreen.svg)](https://blynk.io/)
-[![ESP32](https://img.shields.io/badge/ESP32-Ready-orange.svg)](https://www.espressif.com/)
+![SolidFlow Banner](https://via.placeholder.com/800x200.png?text=SolidFlow+Smart+Irrigation+System) 
+*(Replace with actual project banner)*
 
-An intelligent irrigation system leveraging ESP32 and Blynk app to automate plant watering through environmental sensor data.
+A web-based smart irrigation system that automates plant watering based on real-time sensor data and user-defined parameters.
 
-## 📋 Table of Contents
+## 🌟 Features
 
-- [Features](#features)
-- [System Components](#system-components)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [Testing Results](#testing-results)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+### **User Authentication**
+- Secure JWT-based authentication
+- Login with username/password
+- Registration with email verification
+- Password reset via OTP
+- Forgot password functionality
 
-## ✨ Features
+### **Real-Time Dashboard**
+- Live sensor data visualization (Temperature, Humidity, Soil Moisture)
+- WebSocket-based real-time updates
+- Quick view cards with threshold status indicators
+- Add/Edit crops with predefined thresholds
+- Control panel navigation for each crop
 
-- 🤖 Automated drip irrigation based on soil moisture and temperature
-- 📱 Real-time monitoring through Blynk mobile app
-- 🔌 Multiple sensor integration:
-  - 💧 Soil moisture sensor
-  - 🌡️ Temperature sensor
-  - 💨 Air humidity sensor
-  - 🌊 Water flow sensor
-- 🎮 Manual override capability
-- 🔔 Automatic notifications for extreme humidity conditions
-- 📊 Data visualization through Blynk app
-- ⚡ Flow rate-based watering duration calculation
+### **Smart Irrigation Control**
+- Automatic watering based on:
+  - Sensor thresholds (min/max values)
+  - User-defined time schedules
+- Manual valve control override
+- Irrigation mode selector:
+  - Automatic
+  - Manual
+  - Scheduled
 
-## 🛠️ System Components
+### **Data Visualization**
+- Individual sensor graphs (24hrs/Week/Month)
+- Comparative analytics dashboard
+- Historical data trends
+- Average value calculations:
+  - Daily averages for weekly view
+  - Weekly averages for monthly view
 
-### Hardware
-```
-├── ESP32 microcontroller
-├── Sensors
-│   ├── Soil moisture sensor
-│   ├── Temperature sensor
-│   ├── Air humidity sensor
-│   └── Water flow sensor
-├── Solenoid valve
-└── Drip irrigation equipment
-```
+### **Crop Management**
+- Predefined crop database with optimal thresholds
+- Custom threshold configuration
+- Multi-crop support
+- Threshold boundary notifications
 
-### Software
-```
-├── Blynk IoT platform
-├── Frontend Repository
-└── Backend Repository
-```
+### **Notification System**
+- Real-time alerts for:
+  - Threshold breaches
+  - Irrigation system activations
+  - Schedule reminders
+- Historical notification log
 
-## 💻 Installation
+### **User Profile**
+- Personal information management
+- Email & username updates
+- Password reset functionality
+- Session management
 
-1. **Clone the repositories:**
-   ```bash
-   # Clone frontend repository
-   git clone [frontend-repo-url]
-   
-   # Clone backend repository
-   git clone [backend-repo-url]
-   ```
+## 🛠️ Technologies Used
 
-2. **Install dependencies:**
-   ```bash
-   # Frontend dependencies
-   cd frontend
-   npm install
+### **Frontend**
+- React Vite
+- React Router
+- Chart.js (Data Visualization)
+- WebSocket Client
+- React-Hook-Form
+- Material-UI / Ant Design
 
-   # Backend dependencies
-   cd ../backend
-   npm install
-   ```
+### **Backend**
+- Spring Boot
+- Spring Security
+- WebSocket (STOMP)
+- Spring Data JPA
+- H2 Database (Development) / PostgreSQL (Production)
+- JWT Authentication
+- Java Mail (OTP Service)
 
-3. **Setup Blynk:**
-   - Download Blynk app from App Store/Play Store
-   - Create new project
-   - Copy authentication token
+### **Hardware Integration**
+- DHT11 (Temperature/Humidity Sensor)
+- Soil Moisture Sensor
+- ESP32/Arduino Microcontroller
+- Relay-controlled Water Valve
 
-## ⚙️ Configuration
+## 🚀 Installation
 
-### ESP32 Pin Configuration
-```
-┌─────────────────────┬───────────┐
-│ Sensor/Component    │ GPIO Pin  │
-├─────────────────────┼───────────┤
-│ Soil Moisture      │ GPIO 36   │
-│ Temperature        │ GPIO 39   │
-│ Humidity          │ GPIO 34   │
-│ Water Flow        │ GPIO 35   │
-│ Solenoid Valve    │ GPIO 32   │
-└─────────────────────┴───────────┘
-```
+### **Prerequisites**
+- Java 17+
+- Node.js 16+
+- PostgreSQL (for production)
+- Maven
 
-### Environment Setup
-1. Create `.env` file in backend directory:
-   ```env
-   WIFI_SSID=your_wifi_ssid
-   WIFI_PASSWORD=your_wifi_password
-   BLYNK_AUTH_TOKEN=your_blynk_token
-   ```
-
-2. Configure sensor thresholds in `config.json`:
-   ```json
-   {
-     "soilMoistureThreshold": 500,
-     "temperatureThreshold": 30,
-     "humidityThreshold": {
-       "min": 30,
-       "max": 80
-     }
-   }
-   ```
-
-## 📱 Usage
-
-### Initial Setup
-1. Power up the ESP32 system
-2. Connect to configured WiFi network
-3. Launch Blynk app
-4. Connect to your project
-
-### Monitoring
-- View real-time sensor data:
-  - Soil moisture levels
-  - Temperature readings
-  - Humidity values
-  - Water flow rates
-
-### Control
-- **Manual Mode:**
-  - Toggle automatic watering
-  - Trigger manual irrigation
-  - Set custom watering duration
-
-- **Automatic Mode:**
-  - System waters based on sensor readings
-  - Adjusts watering duration using flow rate
-  - Sends notifications for extreme conditions
-
-## 🧪 Testing Results
-
-### Primary Testing
-- ✅ System functionality verified
-- ✅ Sensor accuracy confirmed
-- ✅ Communication reliability tested
-
-### Field Testing
-- ✅ Successful growth of green onions
-- ✅ Automatic watering cycles performed as expected
-- ✅ Data logging and visualization functional
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-#### 1. Sensor Reading Errors
-```
-Problem: Inconsistent or invalid sensor readings
-Solution: 
-├── Check physical connections
-├── Verify power supply
-└── Recalibrate sensors if needed
-```
-
-#### 2. Connection Issues
-```
-Problem: Blynk app not connecting
-Solution:
-├── Verify WiFi connection
-├── Check auth token
-└── Restart ESP32
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📧 Contact
-
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter) - email@example.com
-
-Project Link: [https://github.com/yourusername/repo-name](https://github.com/yourusername/repo-name)
-
----
-
-### Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/repo-name&type=Date)](https://star-history.com/#yourusername/repo-name&Date)
+### **Backend Setup**
+```bash
+cd solidflow-backend
+mvn clean install
+java -jar target/solidflow-0.0.1-SNAPSHOT.jar
