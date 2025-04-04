@@ -34,7 +34,9 @@ const MultiSensorGraph = () => {
           sensorTypes.map(async (type) => {
             const response = await axios.get(
 
+
               `${backendUrl}/sensor/${type}?filter=${timeRange}&userId=${userId}`
+
             );
             allData[type] = response.data;
           })

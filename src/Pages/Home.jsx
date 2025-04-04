@@ -187,7 +187,7 @@ const Home = () => {
           <div className="bg-gray-700 p-5 rounded-lg mb-5">
             <h3 className="text-xl font-semibold text-green-300">Selected Crops</h3>
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-center items-center">
-              {selectedCrops.map((mapping) => (
+              {selectedCrops && selectedCrops.map && selectedCrops.map((mapping) => (
                 <motion.div
                   key={mapping.id}
                   variants={itemVariants}
