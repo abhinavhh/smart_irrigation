@@ -100,3 +100,115 @@ graph TD
     style B fill:#2196F3,stroke:#1976D2
     style C fill:#607D8B,stroke:#455A64
     style E fill:#FF5722,stroke:#E64A19
+## Installation ⚡
+
+### Prerequisites
+- Java Development Kit 17+
+- Node.js 18.x
+- PostgreSQL 15+
+- Maven 3.9+
+
+### Backend Setup
+```bash
+# Clone repository
+git clone https://github.com/yourusername/solidflow.git
+cd solidflow/backend
+
+# Build application
+mvn clean install
+
+# Configure environment
+cp .env.example .env
+nano .env
+
+# Start application
+java -jar target/solidflow-*.jar
+```
+
+### Frontend Setup
+```bash
+cd ../frontend
+
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env
+nano .env
+
+# Start development server
+npm run dev
+```
+
+## Configuration ⚙️
+
+### Backend (.env)
+```properties
+# Database Configuration
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/solidflow
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=strongpassword
+
+# JWT Configuration
+JWT_SECRET=your_512bit_secret_here
+JWT_EXPIRATION=86400000  # 24h
+
+# Email Configuration
+SPRING_MAIL_HOST=smtp.gmail.com
+SPRING_MAIL_PORT=587
+SPRING_MAIL_USERNAME=your.email@domain.com
+SPRING_MAIL_PASSWORD=app_specific_password
+
+# WebSocket
+WEBSOCKET_ENDPOINT=/api/ws
+STOMP_BROKER=/topic
+```
+
+## API Documentation 📚
+
+Explore our comprehensive API documentation:  
+[![Swagger](https://img.shields.io/badge/Swagger-85EA2D?logo=swagger&logoColor=black)](http://localhost:8080/swagger-ui.html)
+
+```http
+GET /api/sensors
+Authorization: Bearer {token}
+```
+
+```json
+{
+  "temperature": 23.5,
+  "humidity": 65,
+  "soilMoisture": 42,
+  "timestamp": "2023-10-15T14:30:00Z"
+}
+```
+
+## Contributing 🤝
+
+We welcome contributions! Please follow these guidelines:
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/your-feature`)
+3. Commit changes following [Conventional Commits](https://www.conventionalcommits.org/)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request with detailed description
+
+## License 📄
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contact 📬
+
+**Agricultural Technology Team**  
+[![Email](https://img.shields.io/badge/Email-support%40solidflow.tech-blue)](mailto:support@solidflow.tech)  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-SolidFlow-blue)](https://linkedin.com/company/solidflow)  
+
+**Technical Lead**  
+John Doe - [@john_doe_dev](https://twitter.com/john_doe_dev)
+
+---
+
+**Built with ❤️ using Open Source**  
+![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white)
+![Spring](https://img.shields.io/badge/-Spring-6DB33F?logo=spring&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+```
