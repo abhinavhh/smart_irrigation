@@ -86,6 +86,7 @@
 
 ## System Architecture 🏗️
 
+```mermaid
 graph TD
     A[IoT Sensors] -->|BLE/WiFi| B(Microcontroller)
     B -->|MQTT| C[Spring Boot API]
