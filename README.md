@@ -189,16 +189,6 @@ We welcome contributions! Please follow these guidelines:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Contact 📬
-
-**Agricultural Technology Team**  
-[![Email](https://img.shields.io/badge/Email-support%40solidflow.tech-blue)](mailto:support@solidflow.tech)  
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-SolidFlow-blue)](https://linkedin.com/company/solidflow)  
-
-**Technical Lead**  
-John Doe - [@john_doe_dev](https://twitter.com/john_doe_dev)
-
----
 
 **Built with ❤️ using Open Source**  
 ![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white)
