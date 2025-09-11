@@ -9,7 +9,7 @@ function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loggedInUser = localStorage.getItem("username");
+    const loggedInUser = localStorage.getItem("token");
     if (loggedInUser) {
       navigate("/home");
     }
@@ -17,7 +17,6 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted"); // Debug log
     
     try {
       if (!formData.username || !formData.password) {
@@ -34,14 +33,22 @@ function Login() {
         });
         return;
       }
-
-      console.log("Making API call..."); // Debug log
       const response = await axiosInstance.post("/auth/login", formData);
       console.log("API Response:", response); // Debug log
 
       if (response.data) {
-        localStorage.setItem("username", formData.username);
-        localStorage.setItem("userId", response.data.userId);
+        localStorage.setItem('token', response.token);
+        toast.error(response.message, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Slide,
+        });
         navigate("/home");
       }
     } catch (err) {
