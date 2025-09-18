@@ -190,7 +190,7 @@ const Profile = () => {
     const confirmLogout = () => {
         localStorage.removeItem("selectedCrops");
         localStorage.removeItem("token");
-        navigate('/login');
+        navigate('/');
         toast.dismiss(); // Close the toast
     };
 

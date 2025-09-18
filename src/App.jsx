@@ -22,8 +22,6 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const location = useLocation();
-  const hideNavbarPaths = ['/login', '/register'];
-  const showNavbar = !hideNavbarPaths.includes(location.pathname);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -42,11 +40,10 @@ function App() {
   return (
     
     <MantineProvider>
-      {showNavbar && <Navbar />}
+      {isAuthenticated && <Navbar/>}
       <Routes>
         <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Login onLogin={handleLogin}/>} />
         <Route path="/reset-password" element={<ResetPasswordRequest/>}/>
         <Route path="/home" element={<Home onLogout={handleLogout} />}/>
         <Route path="/addCrop"element={<AddCrop />}/>

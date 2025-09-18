@@ -33,11 +33,10 @@ function Login() {
         return;
       }
       const response = await axiosInstance.post("/auth/login", formData);
-      console.log("API Response:", response.data); // Debug log
       const token = response.data.token;
       if (token) {
         localStorage.setItem('token', token);
-        toast.error(response.message, {
+        toast.success(response.data.message, {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: false,

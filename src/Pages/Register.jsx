@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axios";
 import { toast, Slide } from "react-toastify";
 
@@ -44,7 +44,7 @@ function Register() {
             username: formData.username,
             password: formData.password
         });
-        toast.success('User Registration Successfull', {
+        toast.success(response.data.message, {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: false,
@@ -55,9 +55,9 @@ function Register() {
           theme: "dark",
           transition: Slide,
         });
-      navigate('/login');
+      navigate('/');
       } catch (error) {
-        toast.error('Registration Failed try again', {
+        toast.error(response.data.message, {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: false,
@@ -103,7 +103,7 @@ function Register() {
           </label>
           <button className="w-full py-2 px-4 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" type="submit">Register</button>
         </form>
-        <p className="text-sm text-center mt-4 text-gray-400">Already registered? <a className="text-green-400 hover:underline" href="/login">Login here</a></p>
+        <p className="text-sm text-center mt-4 text-gray-400">Already registered? <Link className="text-green-400 hover:underline" to='/'>Login here</Link></p>
       </div>
     </div>
   );
