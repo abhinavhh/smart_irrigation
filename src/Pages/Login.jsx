@@ -17,7 +17,6 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     try {
       if (!formData.username || !formData.password) {
         toast.error('Please fill in all fields', {
@@ -34,10 +33,10 @@ function Login() {
         return;
       }
       const response = await axiosInstance.post("/auth/login", formData);
-      console.log("API Response:", response); // Debug log
-
-      if (response.data) {
-        localStorage.setItem('token', response.token);
+      console.log("API Response:", response.data); // Debug log
+      const token = response.data.token;
+      if (token) {
+        localStorage.setItem('token', token);
         toast.error(response.message, {
           position: "top-center",
           autoClose: 5000,
@@ -51,9 +50,11 @@ function Login() {
         });
         navigate("/home");
       }
+      else{
+       toast.error(response.data);
+      }
     } catch (err) {
-      console.error("Login error:", err); // Debug log
-      toast.error('Login failed Invalid username or password', {
+      toast.error(err.response.data, {
         position: "top-center",
         autoClose: 5000,
         hideProgressBar: false,
