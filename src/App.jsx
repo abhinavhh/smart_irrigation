@@ -28,9 +28,8 @@ function App() {
     setIsAuthenticated(!!token);
   }, []);
 
-  const handleLogin = (token) => {
-    localStorage.setItem("token", token);
-    setIsAuthenticated(true);
+  const handleLogin = () => {
+    if(localStorage.getItem('token')) setIsAuthenticated(true);
   };
 
   const handleLogout = () => {

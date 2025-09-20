@@ -14,6 +14,7 @@ const Home = () => {
   });
   const navigate = useNavigate();
   const websocketURL = import.meta.env.VITE_WEBSOCKET_URL;
+  const token = localStorage.getItem('token');
   // Fetch user-specific crop mappings from the backend
   useEffect(() => {
     const fetchUserCrops = async () => {
@@ -24,7 +25,11 @@ const Home = () => {
           return;
         }
         console.log("Fetching selected crops for userId:", userId);
-        const response = await axiosInstance.get(`/usercrops/user/${userId}`);
+        const response = await axiosInstance.get(`/usercrops/user/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         console.log("User crops response:", response.data);
         setSelectedCrops(response.data);
       } catch (error) {

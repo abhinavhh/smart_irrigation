@@ -33,9 +33,13 @@ function Login() {
         return;
       }
       const response = await axiosInstance.post("/auth/login", formData);
+      
       const token = response.data.token;
       if (token) {
         localStorage.setItem('token', token);
+        console.log(response.data.userId);
+        localStorage.setItem('userId', response.data.userId);
+        console.log(response.data);
         toast.success(response.data.message, {
           position: "top-center",
           autoClose: 5000,

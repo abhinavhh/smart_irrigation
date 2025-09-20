@@ -10,33 +10,21 @@ const Profile = () => {
     const [editing, setEditing] = useState(false);
     const [formData, setFormData] = useState({ username: '', email: '' });
     const navigate = useNavigate();
-    const username = localStorage.getItem('username');
 
     const [isLoading, setIsLoading] = useState(true);
-
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
     useEffect(() => {
-        if (!username) {
-            toast.error('User not Found', {
-                position: "top-center",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "dark",
-                transition: Bounce,
-            });
-            // navigate('/login');
-            return;
-        }
+        
 
         const fetchUserData = async () => {
             setIsLoading(true);
             try {
-                console.log("Fetching data for username:", username); // Log 1
-                const response = await axiosInstance.get(`user/${username}`);
-                console.log("Response data:", response.data); // Log 2
+                const response = await axiosInstance.get(`user/${userId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
                 setUserData(response.data);
                 setFormData(response.data);
             } catch (error) {
@@ -64,7 +52,7 @@ const Profile = () => {
         };
 
         fetchUserData();
-    }, [username, navigate]);
+    }, [userId, navigate]);
 
     const handleEditToggle = () => {
         setEditing(!editing);

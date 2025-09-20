@@ -79,7 +79,7 @@ const ResetPassword = () => {
                 theme: "dark",
                 transition: Slide,
             });
-            navigate('/login');
+            navigate('/');
         } catch (error) {
             toast.success('Error resetting password', {
                 position: "top-center",

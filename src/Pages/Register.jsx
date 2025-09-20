@@ -17,10 +17,10 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const regex = /^(?=.@*[a-z])(?=.@*[A-Z])(?=.@*[0-9])(?=.@*a-zA-Z0-9){8,}$/
-   if(!regex.test(formData.password)){
-      setError('Password must be atleast 8 char long and must contain a special, number and uppercase');
-      return
-    }
+  //  if(!regex.test(formData.password)){
+  //     setError('Password must be atleast 8 char long and must contain a special, number and uppercase');
+  //     return
+  //   }
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match', {
         position: "top-center",

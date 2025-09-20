@@ -17,12 +17,16 @@ const SelectCrop = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-
+    const token = localStorage.getItem('token');
     // Fetch all available crops from the backend
     useEffect(() => {
         const fetchCrops = async () => {
             try {
-                const response = await axiosInstance.get('/crops/all');
+                const response = await axiosInstance.get('/crops/all', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
                 setCrops(response.data);
             } catch (err) {
                 console.error("Error fetching crops:", err);
@@ -48,7 +52,11 @@ const SelectCrop = () => {
                     });
                     return;
                 }
-                const response = await axiosInstance.get(`/usercrops/user/${userId}`);
+                const response = await axiosInstance.get(`/usercrops/user/${userId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
                 if (response.data.length > 0) {
                     // For single selection, take only the first selected crop.
                     setSelectedCrop(response.data[0]);
@@ -81,7 +89,10 @@ const SelectCrop = () => {
         if (selectedCrop && selectedCrop.crop.id === crop.id) {
             try {
                 await axiosInstance.delete('/usercrops/deselect', {
-                    params: { userId: userId, cropId: crop.id }
+                    params: { userId: userId, cropId: crop.id },
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 });
                 setSelectedCrop(null);
             } catch (error) {
@@ -99,7 +110,10 @@ const SelectCrop = () => {
             if (selectedCrop) {
                 try {
                     await axiosInstance.delete('/usercrops/deselect', {
-                        params: { userId: userId, cropId: selectedCrop.crop.id }
+                        params: { userId: userId, cropId: selectedCrop.crop.id },
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
                     });
                 } catch (error) {
                     console.error("Error deselecting previous crop:", error);
@@ -115,7 +129,10 @@ const SelectCrop = () => {
             try {
                 // Call backend endpoint to select the new crop.
                 const response = await axiosInstance.post('/usercrops/select', null, {
-                    params: { userId: userId, cropId: crop.id }
+                    params: { userId: userId, cropId: crop.id },
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 });
                 // Merge the returned mapping info into the crop object.
                 const cropMapping = { id: response.data.id, crop: { ...crop, mappingId: response.data.id }, ...response.data };
@@ -174,7 +191,11 @@ const SelectCrop = () => {
                 customMinSoilMoisture: editedCropMapping.crop.minSoilMoisture,
                 customMaxSoilMoisture: editedCropMapping.crop.maxSoilMoisture,
             };
-            await axiosInstance.put(`/usercrops/update/${editedCropMapping.id}`, updateData);
+            await axiosInstance.put(`/usercrops/update/${editedCropMapping.id}`, updateData, {
+                headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+            });
             toast.success("Crop thresholds updated successfully!", {
                 position: "top-center",
                 autoClose: 5000,

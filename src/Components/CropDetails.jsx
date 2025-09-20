@@ -5,11 +5,15 @@ import axiosInstance from "../api/axios";
 function CropDetails() {
   const { cropId } = useParams();
   const [crop, setCrop] = useState(null);
-
+  const token = localStorage.getItem('token');
   useEffect(() => {
     // Fetch crop details by ID
     axiosInstance
-      .get(`/crops/${cropId}`)
+      .get(`/crops/${cropId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
       .then((response) => {
         setCrop(response.data);
       })
