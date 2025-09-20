@@ -23,7 +23,7 @@ const Graph = () => {
   const [graphData, setGraphData] = useState([]);
   const [timeRange, setTimeRange] = useState("day");
   const navigate = useNavigate();
-
+  const token = localStorage.getItem('token');
   useEffect(() => {
     let intervalId;
 
@@ -32,7 +32,11 @@ const Graph = () => {
         // Retrieve userId from localStorage for multi-user filtering
         const userId = localStorage.getItem("userId") || "";
         const response = await axiosInstance.get(
-          `/sensor/${sensorType}?filter=${timeRange}&userId=${userId}`
+          `/sensor/${sensorType}?filter=${timeRange}&userId=${userId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
         );
 
         const newData = response.data;

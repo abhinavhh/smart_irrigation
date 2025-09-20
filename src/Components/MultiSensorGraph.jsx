@@ -19,7 +19,8 @@ const MultiSensorGraph = () => {
   const [timeRange, setTimeRange] = useState("day");
   const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
+  const token = localStorage.getItem('token');
+  
   useEffect(() => {
     let intervalId;
 
@@ -35,7 +36,11 @@ const MultiSensorGraph = () => {
             const response = await axios.get(
 
 
-              `${backendUrl}/sensor/${type}?filter=${timeRange}&userId=${userId}`
+              `${backendUrl}/sensor/${type}?filter=${timeRange}&userId=${userId}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`
+                }
+              }
 
             );
             allData[type] = response.data;

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { CogIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { toast, Slide } from "react-toastify";
 import axiosInstance from "../api/axios";
-
+import { blue } from "@mui/material/colors";
 const Home = () => {
   const [selectedCrops, setSelectedCrops] = useState([]);
   const [sensorData, setSensorData] = useState({
@@ -15,6 +15,7 @@ const Home = () => {
   const navigate = useNavigate();
   const websocketURL = import.meta.env.VITE_WEBSOCKET_URL;
   const token = localStorage.getItem('token');
+  const userId = localStorage.getItem('userId');
   // Fetch user-specific crop mappings from the backend
   useEffect(() => {
     const fetchUserCrops = async () => {
@@ -145,6 +146,30 @@ const Home = () => {
     navigate("/addCrop");
   };
 
+  const handleDummyDataGeneration = async() => {
+    try {
+      await axiosInstance.post(`sensors/dummy/${userId}`,{}, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      toast.success('Dummy data added', {
+        position: "top-center",
+        transition: Slide
+      });
+    }
+    catch (err) {
+      toast.error("Failed to add dummy data", {
+        position: "top-center",
+        autoClose: 5000,
+        theme: "dark",
+        transition: Slide,
+      });
+      console.log('Dummy data error: ',err);
+      
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 pt-12 pb-6 px-6 font-sans">
       <motion.div
@@ -186,7 +211,16 @@ const Home = () => {
             </motion.div>
           ))}
         </motion.div>
-
+        <div>
+          <motion.button
+            initial={{x: -20}}
+            animate={{x: 0, transition: {duration: 0.4}}}
+            onClick={handleDummyDataGeneration}
+            className="bg-blue-600 p-2 mb-6 rounded-lg hover:bg-blue-900" 
+          >
+            Generate Dummy Data
+          </motion.button>
+        </div>
         {/* User Crops with Individual Control Panel Buttons and edit buttons*/}
         {selectedCrops.length > 0 ? (
           <div className="bg-gray-700 p-5 rounded-lg mb-5">
