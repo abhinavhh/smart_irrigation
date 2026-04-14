@@ -29,7 +29,7 @@ function App() {
   }, []);
 
   const handleLogin = () => {
-    if(localStorage.getItem('token')) setIsAuthenticated(true);
+    setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
@@ -39,7 +39,7 @@ function App() {
   return (
     
     <MantineProvider>
-      {isAuthenticated && <Navbar/>}
+      { <Navbar/>}
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Login onLogin={handleLogin}/>} />
