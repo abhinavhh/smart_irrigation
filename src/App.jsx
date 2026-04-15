@@ -36,10 +36,13 @@ function App() {
     localStorage.removeItem("token");
     setIsAuthenticated(false);
   };
+  const hideNavbarRoutes = ["/", "/register", "/reset-password", "/forgot-password"];
+  const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname);
+
   return (
     
     <MantineProvider>
-      { <Navbar/>}
+      {!shouldHideNavbar && <Navbar/>}
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Login onLogin={handleLogin}/>} />
