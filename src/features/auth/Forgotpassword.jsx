@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import axiosInstance from '../api/axios';
+import axiosInstance from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { AUTH_FORGOT_PASSWORD_URL } from './types';
+import { toast, Slide } from 'react-toastify';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -10,10 +12,10 @@ const ForgotPassword = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axiosInstance.post('/auth/forgot-password', { email });
+            const response = await axiosInstance.post(AUTH_FORGOT_PASSWORD_URL, { email });
             setMessage(response.data);
         } catch (error) {
-            toast.success('Error sending reset token', {
+            toast.error('Error sending reset token', {
                 position: "top-center",
                 autoClose: 5000,
                 hideProgressBar: false,

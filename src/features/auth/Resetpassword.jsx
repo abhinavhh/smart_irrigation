@@ -1,16 +1,13 @@
 import { useState } from 'react';
-import axiosInstance from '../api/axios';
+import axiosInstance from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { FiLock, FiMail, FiKey } from 'react-icons/fi';
 import { toast, Slide, Bounce } from 'react-toastify';
+import { AUTH_FORGOT_PASSWORD_URL, AUTH_VERIFY_OTP_URL, AUTH_RESET_PASSWORD_URL, INITIAL_RESET_DATA } from './types';
 
 const ResetPassword = () => {
     const [step, setStep] = useState(1); // 1: email, 2: OTP, 3: new password
-    const [formData, setFormData] = useState({
-        email: '',
-        otp: '',
-        newPassword: ''
-    });
+    const [formData, setFormData] = useState(INITIAL_RESET_DATA);
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
@@ -21,7 +18,7 @@ const ResetPassword = () => {
     const handleRequestOTP = async (e) => {
         e.preventDefault();
         try {
-            const response = await axiosInstance.post('/auth/forgot-password', { email: formData.email });
+            const response = await axiosInstance.post(AUTH_FORGOT_PASSWORD_URL, { email: formData.email });
             setMessage(response.data);
             setStep(2);
         } catch (error) {
@@ -42,7 +39,7 @@ const ResetPassword = () => {
     const handleVerifyOTP = async (e) => {
         e.preventDefault();
         try {
-            const response = await axiosInstance.post('/auth/verify-otp', { email: formData.email, otp: formData.otp });
+            const response = await axiosInstance.post(AUTH_VERIFY_OTP_URL, { email: formData.email, otp: formData.otp });
             setMessage(response.data);
             setStep(3);
         } catch (error) {
@@ -63,7 +60,7 @@ const ResetPassword = () => {
     const handleResetPassword = async (e) => {
         e.preventDefault();
         try {
-            const response = await axiosInstance.post('/auth/reset-password', {
+            const response = await axiosInstance.post(AUTH_RESET_PASSWORD_URL, {
                 email: formData.email,
                 otp: formData.otp,
                 newPassword: formData.newPassword

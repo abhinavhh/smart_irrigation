@@ -1,16 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axios";
+import axiosInstance from "../../api/axios";
 import { toast, Slide } from "react-toastify";
+import { AUTH_REGISTER_URL, INITIAL_REGISTER_DATA } from "./types";
 
 function Register() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
-  });
+  const [formData, setFormData] = useState(INITIAL_REGISTER_DATA);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -38,7 +33,7 @@ function Register() {
 
 
     try {
-        const response = await axiosInstance.post('/auth/register', {
+        const response = await axiosInstance.post(AUTH_REGISTER_URL, {
             name: formData.name,
             email: formData.email,
             username: formData.username,

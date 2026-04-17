@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axios";
+import axiosInstance from "../../api/axios";
 import { toast, Bounce, Slide } from "react-toastify";
+import { AUTH_LOGIN_URL, INITIAL_LOGIN_DATA } from "./types";
 
 function Login() {
-  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [formData, setFormData] = useState(INITIAL_LOGIN_DATA);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -32,7 +33,7 @@ function Login() {
         });
         return;
       }
-      const response = await axiosInstance.post("/auth/login", formData);
+      const response = await axiosInstance.post(AUTH_LOGIN_URL, formData);
       
       const token = response.data.token;
       if (token) {

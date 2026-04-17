@@ -1,16 +1,12 @@
 import { BrowserRouter as Router, Routes, Route , Navigate, useLocation} from "react-router-dom";
 import Home from "./Pages/Home";
 import Profile from "./Components/Profile";
-import Login from "./Pages/Login";
+import { Login, Register, ForgotPassword, ResetPassword } from "./features/auth";
 import AddCrop from "./Components/AddCrop";
 import CropDetails from "./Components/CropDetails";
-// import Dashboard from "./Components/Dashboard";
 import Graph from "./Components/Graph";
 import ControlPanel from "./Components/ControlPanel";
-import Register from "./Pages/Register";
-import { useState,useEffect } from "react";
-import ResetPasswordRequest from "./Components/ResetPassword";
-import ForgotPassword from "./Components/ForgotPassword";
+import { useState, useEffect } from "react";
 import Notification  from "./Components/Notifications";
 import MultiSensorGraph from "./Components/MultiSensorGraph";
 import '@mantine/core/styles.css';
@@ -46,7 +42,7 @@ function App() {
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Login onLogin={handleLogin}/>} />
-        <Route path="/reset-password" element={<ResetPasswordRequest/>}/>
+        <Route path="/reset-password" element={<ResetPassword/>}/>
         <Route path="/home" element={<Home onLogout={handleLogout} />}/>
         <Route path="/addCrop"element={<AddCrop />}/>
         <Route path="/cropdetails" element={<CropDetails/>}/>
