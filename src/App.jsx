@@ -2,8 +2,7 @@ import { BrowserRouter as Router, Routes, Route , Navigate, useLocation} from "r
 import Home from "./Pages/Home";
 import Profile from "./Components/Profile";
 import { Login, Register, ForgotPassword, ResetPassword } from "./features/auth";
-import AddCrop from "./Components/AddCrop";
-import CropDetails from "./Components/CropDetails";
+import { AddCrop, CropDetail } from "./features/crops";
 import Graph from "./Components/Graph";
 import ControlPanel from "./Components/ControlPanel";
 import { useState, useEffect } from "react";
@@ -13,25 +12,13 @@ import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 import { ToastContainer, Bounce } from 'react-toastify';
 import Navbar from "./Components/Navbar";
+import ProtectedRoute from "./Components/ProtectedRoute";
+import { useAuth } from "./features/auth";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
+  const { isAuthenticated, logout } = useAuth();
   const location = useLocation();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token);
-  }, []);
-
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsAuthenticated(false);
-  };
   const hideNavbarRoutes = ["/", "/register", "/reset-password", "/forgot-password"];
   const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname);
 
@@ -41,17 +28,19 @@ function App() {
       {!shouldHideNavbar && <Navbar/>}
       <Routes>
         <Route path="/register" element={<Register />} />
-        <Route path="/" element={<Login onLogin={handleLogin}/>} />
+        <Route path="/" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword/>}/>
-        <Route path="/home" element={<Home onLogout={handleLogout} />}/>
-        <Route path="/addCrop"element={<AddCrop />}/>
-        <Route path="/cropdetails" element={<CropDetails/>}/>
         <Route path="/forgot-password" element={<ForgotPassword/>}/>
-        <Route path="/notifications" element={<Notification/>}/>
-        <Route path="/graph/:sensorType" element={<Graph/>}/>
-        <Route path="/control-panel/:cropId" element={<ControlPanel/>}/>
-        <Route path="/profile" element={<Profile/>}/>
-        <Route path="/multi-sensor-graph" element={<MultiSensorGraph/>}/>
+        
+        {/* Protected Routes */}
+        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>}/>
+        <Route path="/addCrop" element={<ProtectedRoute><AddCrop /></ProtectedRoute>}/>
+        <Route path="/cropdetails" element={<ProtectedRoute><CropDetail /></ProtectedRoute>}/>
+        <Route path="/notifications" element={<ProtectedRoute><Notification /></ProtectedRoute>}/>
+        <Route path="/graph/:sensorType" element={<ProtectedRoute><Graph /></ProtectedRoute>}/>
+        <Route path="/control-panel/:cropId" element={<ProtectedRoute><ControlPanel /></ProtectedRoute>}/>
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>}/>
+        <Route path="/multi-sensor-graph" element={<ProtectedRoute><MultiSensorGraph /></ProtectedRoute>}/>
       </Routes>
     <ToastContainer
       position="bottom-left"

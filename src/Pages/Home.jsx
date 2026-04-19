@@ -4,8 +4,10 @@ import { motion } from "framer-motion";
 import { CogIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { toast, Slide } from "react-toastify";
 import axiosInstance from "../api/axios";
+import { useAuth } from "../features/auth";
 import { blue } from "@mui/material/colors";
 const Home = () => {
+  const { user, logout } = useAuth();
   const [selectedCrops, setSelectedCrops] = useState([]);
   const [sensorData, setSensorData] = useState({
     Temperature: "N/A",
@@ -14,23 +16,16 @@ const Home = () => {
   });
   const navigate = useNavigate();
   const websocketURL = import.meta.env.VITE_WEBSOCKET_URL;
-  const token = localStorage.getItem('token');
-  const userId = localStorage.getItem('userId');
   // Fetch user-specific crop mappings from the backend
   useEffect(() => {
     const fetchUserCrops = async () => {
       try {
-        const userId = localStorage.getItem("userId");
-        if (!userId) {
-          console.error("User ID not found in localStorage");
+        if (!user || !user.id) {
+          console.error("User id context not found");
           return;
         }
-        console.log("Fetching selected crops for userId:", userId);
-        const response = await axiosInstance.get(`/usercrops/user/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        console.log("Fetching selected crops for userId:", user.id);
+        const response = await axiosInstance.get(`/usercrops/user/${user.id}`);
         console.log("User crops response:", response.data);
         setSelectedCrops(response.data);
       } catch (error) {
@@ -45,7 +40,7 @@ const Home = () => {
     };
 
     fetchUserCrops();
-  }, []);
+  }, [user]);
 
   // WebSocket setup for real-time sensor data
   useEffect(() => {
@@ -148,11 +143,8 @@ const Home = () => {
 
   const handleDummyDataGeneration = async() => {
     try {
-      await axiosInstance.post(`sensors/dummy/${userId}`,{}, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
+      if (!user || !user.id) return;
+      await axiosInstance.post(`sensors/dummy/${user.id}`,{});
       toast.success('Dummy data added', {
         position: "top-center",
         transition: Slide

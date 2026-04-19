@@ -3,28 +3,25 @@ import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { FiEdit3, FiSave, FiLogOut, FiUser, FiKey } from 'react-icons/fi';
 import { toast, Bounce, Slide } from 'react-toastify';
+import { useAuth } from '../features/auth';
 
 
 const Profile = () => {
+    const { user, logout } = useAuth();
     const [userData, setUserData] = useState({ username: '', email: '' });
     const [editing, setEditing] = useState(false);
     const [formData, setFormData] = useState({ username: '', email: '' });
     const navigate = useNavigate();
 
     const [isLoading, setIsLoading] = useState(true);
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
     useEffect(() => {
         
 
         const fetchUserData = async () => {
             setIsLoading(true);
             try {
-                const response = await axiosInstance.get(`user/${userId}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+                if (!user || !user.id) return;
+                const response = await axiosInstance.get(`user/${user.id}`);
                 setUserData(response.data);
                 setFormData(response.data);
             } catch (error) {
@@ -52,7 +49,7 @@ const Profile = () => {
         };
 
         fetchUserData();
-    }, [userId, navigate]);
+    }, [user, navigate]);
 
     const handleEditToggle = () => {
         setEditing(!editing);
@@ -176,8 +173,7 @@ const Profile = () => {
     };
     
     const confirmLogout = () => {
-        localStorage.removeItem("selectedCrops");
-        localStorage.removeItem("token");
+        logout();
         navigate('/');
         toast.dismiss(); // Close the toast
     };

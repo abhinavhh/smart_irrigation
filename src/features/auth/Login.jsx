@@ -3,18 +3,19 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axios";
 import { toast, Bounce, Slide } from "react-toastify";
 import { AUTH_LOGIN_URL, INITIAL_LOGIN_DATA } from "./types";
+import { useAuth } from "./AuthContext";
 
 function Login() {
   const [formData, setFormData] = useState(INITIAL_LOGIN_DATA);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const loggedInUser = localStorage.getItem("token");
-    if (loggedInUser) {
+    if (isAuthenticated) {
       navigate("/home");
     }
-  }, [navigate]);
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,10 +38,7 @@ function Login() {
       
       const token = response.data.token;
       if (token) {
-        localStorage.setItem('token', token);
-        console.log(response.data.userId);
-        localStorage.setItem('userId', response.data.userId);
-        console.log(response.data);
+        login(token, response.data.userId);
         toast.success(response.data.message, {
           position: "top-center",
           autoClose: 5000,

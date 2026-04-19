@@ -1,19 +1,14 @@
 import  { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axiosInstance from "../api/axios";
+import axiosInstance from "../../api/axios";
 
-function CropDetails() {
+function CropDetail() {
   const { cropId } = useParams();
   const [crop, setCrop] = useState(null);
-  const token = localStorage.getItem('token');
   useEffect(() => {
     // Fetch crop details by ID
     axiosInstance
-      .get(`/crops/${cropId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
+      .get(`/crops/${cropId}`)
       .then((response) => {
         setCrop(response.data);
       })
@@ -44,4 +39,4 @@ function CropDetails() {
   );
 }
 
-export default CropDetails;
+export default CropDetail;

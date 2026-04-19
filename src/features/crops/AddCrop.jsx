@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../api/axios';
+import axiosInstance from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { FiThermometer, FiDroplet, FiCloud, FiEdit3 } from 'react-icons/fi';
 import { toast, Slide, Bounce } from 'react-toastify';
+import { useAuth } from '../auth';
 
-const SelectCrop = () => {
+const AddCrop = () => {
     const [crops, setCrops] = useState([]); // All available crops
 
     // ----- SINGLE CROP SELECTION STATE ----- 
     // Previously: const [selectedCrops, setSelectedCrops] = useState([]);
     // Now: using a single selectedCrop object
+    const { user } = useAuth();
     const [selectedCrop, setSelectedCrop] = useState(null);
 
     const [editedCropMapping, setEditedCropMapping] = useState(null); // The mapping object being edited
@@ -17,16 +19,11 @@ const SelectCrop = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-    const token = localStorage.getItem('token');
     // Fetch all available crops from the backend
     useEffect(() => {
         const fetchCrops = async () => {
             try {
-                const response = await axiosInstance.get('/crops/all', {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+                const response = await axiosInstance.get('/crops/all');
                 setCrops(response.data);
             } catch (err) {
                 console.error("Error fetching crops:", err);
@@ -42,8 +39,7 @@ const SelectCrop = () => {
     useEffect(() => {
         const fetchUserCrop = async () => {
             try {
-                const userId = localStorage.getItem('userId');
-                if (!userId) {
+                if (!user || !user.id) {
                     toast.error('User not logged in', {
                         position: "top-center",
                         autoClose: 5000,
@@ -52,11 +48,7 @@ const SelectCrop = () => {
                     });
                     return;
                 }
-                const response = await axiosInstance.get(`/usercrops/user/${userId}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+                const response = await axiosInstance.get(`/usercrops/user/${user.id}`);
                 if (response.data.length > 0) {
                     // For single selection, take only the first selected crop.
                     setSelectedCrop(response.data[0]);
@@ -70,12 +62,11 @@ const SelectCrop = () => {
         };
 
         fetchUserCrop();
-    }, []);
+    }, [user]);
 
     // Handle crop selection/deselection for a single crop.
     const handleCropSelect = async (crop) => {
-        const userId = localStorage.getItem("userId");
-        if (!userId) {
+        if (!user || !user.id) {
             toast.error('User not logged in', {
                 position: "top-center",
                 autoClose: 5000,
@@ -89,10 +80,7 @@ const SelectCrop = () => {
         if (selectedCrop && selectedCrop.crop.id === crop.id) {
             try {
                 await axiosInstance.delete('/usercrops/deselect', {
-                    params: { userId: userId, cropId: crop.id },
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                    params: { userId: user.id, cropId: crop.id }
                 });
                 setSelectedCrop(null);
             } catch (error) {
@@ -110,10 +98,7 @@ const SelectCrop = () => {
             if (selectedCrop) {
                 try {
                     await axiosInstance.delete('/usercrops/deselect', {
-                        params: { userId: userId, cropId: selectedCrop.crop.id },
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
+                        params: { userId: user.id, cropId: selectedCrop.crop.id }
                     });
                 } catch (error) {
                     console.error("Error deselecting previous crop:", error);
@@ -129,10 +114,7 @@ const SelectCrop = () => {
             try {
                 // Call backend endpoint to select the new crop.
                 const response = await axiosInstance.post('/usercrops/select', null, {
-                    params: { userId: userId, cropId: crop.id },
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                    params: { userId: user.id, cropId: crop.id }
                 });
                 // Merge the returned mapping info into the crop object.
                 const cropMapping = { id: response.data.id, crop: { ...crop, mappingId: response.data.id }, ...response.data };
@@ -191,11 +173,7 @@ const SelectCrop = () => {
                 customMinSoilMoisture: editedCropMapping.crop.minSoilMoisture,
                 customMaxSoilMoisture: editedCropMapping.crop.maxSoilMoisture,
             };
-            await axiosInstance.put(`/usercrops/update/${editedCropMapping.id}`, updateData, {
-                headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-            });
+            await axiosInstance.put(`/usercrops/update/${editedCropMapping.id}`, updateData);
             toast.success("Crop thresholds updated successfully!", {
                 position: "top-center",
                 autoClose: 5000,
@@ -399,8 +377,8 @@ const SelectCrop = () => {
         </div>
     );
 };
+export default AddCrop;
 
-export default SelectCrop;
 
 
 
